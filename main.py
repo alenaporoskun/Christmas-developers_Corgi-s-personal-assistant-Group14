@@ -1,15 +1,12 @@
 from collections import UserDict
-
 from datetime import datetime
-
 from pickle import dump
-
 from pickle import load
+from os import path
 
-from pathlib import Path
+CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
 
-FILENAME = Path(Path.home() / 'address_book.pkl')
-
+FILENAME = path.join(CURRENT_DIRECTORY, 'address_book.pkl')
 
 def main():
 
@@ -17,9 +14,10 @@ def main():
     book = AddressBook()
 
     # Завантаження адресної книги з диска
-    book.load_from_file(FILENAME)
-
-    if not book.data:
+    if path.exists(FILENAME):
+        print('\nLoad contacts...')
+        book.load_from_file(FILENAME)
+    else:
         # Додавання записів до пустої книги
         print('\nAdd contacts...')
 
@@ -64,7 +62,6 @@ def main():
         # Встановлення дати народження контактів
         anna_record.set_birthday("2003-02-24")
         lily_record.set_birthday("2000-10-01")
-
 
 
     print('\nbook')
@@ -239,7 +236,7 @@ class AddressBook(UserDict):
 
     def load_from_file(self, filename):
         # Завантаження з файлу
-        if not filename.exists():
+        if not path.exists(filename):
             return
         with open(filename, "rb") as file:
             self.data = load(file)
