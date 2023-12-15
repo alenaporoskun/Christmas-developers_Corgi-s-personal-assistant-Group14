@@ -1,55 +1,68 @@
 from collections import UserDict
 from datetime import datetime
-import pickle
+from pickle import dump
+from pickle import load
+from os import path
+
+CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
+
+FILENAME = path.join(CURRENT_DIRECTORY, 'address_book.pkl')
 
 def main():
 
     # Створення нової адресної книги
     book = AddressBook()
 
-    print('\nAdd contacts...')
+    # Завантаження адресної книги з диска
+    if path.exists(FILENAME):
+        print('\nLoad contacts...')
+        book.load_from_file(FILENAME)
+    else:
+        # Додавання записів до пустої книги
+        print('\nAdd contacts...')
 
-    # Створення запису для John
-    john_record = Record("John")
-    john_record.add_phone("1234567890")
-    john_record.add_phone("5555555555")
+        # Створення запису для John
+        john_record = Record("John")
+        john_record.add_phone("1234567890")
+        john_record.add_phone("5555555555")
 
-    # Додавання запису John до адресної книги
-    book.add_record(john_record)
+        # Додавання запису John до адресної книги
+        book.add_record(john_record)
 
-    # Створення та додавання нового запису для Jane
-    jane_record = Record("Jane")
-    jane_record.add_phone("9876543210")
-    book.add_record(jane_record)
+        # Створення та додавання нового запису для Jane
+        jane_record = Record("Jane")
+        jane_record.add_phone("9876543210")
+        book.add_record(jane_record)
 
-    # Знаходження та редагування телефону для John
-    john = book.find("John")
-    john.edit_phone("1234567890", "1112223333")
+        # Знаходження та редагування телефону для John
+        john = book.find("John")
+        john.edit_phone("1234567890", "1112223333")
 
-    # Встановлення дати народження для John
-    john_record.set_birthday("2001-08-19")
+        # Встановлення дати народження для John
+        john_record.set_birthday("2001-08-19")
 
-    # print(john_record)                      # Виведення: Contact name: John, phones: 1112223333; 5555555555, birthday: 2001-08-19
-    # print(john_record.days_to_birthday())   # Виведення: There are 319 days left before the birthday.
+        # print(john_record)                      # Виведення: Contact name: John, phones: 1112223333; 5555555555, birthday: 2001-08-19
+        # print(john_record.days_to_birthday())   # Виведення: There are 319 days left before the birthday.
 
-    # Створення записів для інших котанктів
-    kol_record = Record("Kol")
-    anna_record = Record("Anna")
-    lily_record = Record("Lily")
+        # Створення записів для інших котанктів
+        kol_record = Record("Kol")
+        anna_record = Record("Anna")
+        lily_record = Record("Lily")
 
-    # Додавання нових записів до адресної книги
-    book.add_record(kol_record)
-    book.add_record(anna_record)
-    book.add_record(lily_record)
+        # Додавання нових записів до адресної книги
+        book.add_record(kol_record)
+        book.add_record(anna_record)
+        book.add_record(lily_record)
 
-    # Додавання номерів до контактів
-    kol_record.add_phone("1234567890")
-    anna_record.add_phone("0667954896")
-    lily_record.add_phone("0955739843")
+        # Додавання номерів до контактів
+        kol_record.add_phone("1234567890")
+        anna_record.add_phone("0667954896")
+        lily_record.add_phone("0955739843")
 
-    # Встановлення дати народження контактів
-    anna_record.set_birthday("2003-02-24")
-    lily_record.set_birthday("2000-10-01")
+        # Встановлення дати народження контактів
+        anna_record.set_birthday("2003-02-24")
+        lily_record.set_birthday("2000-10-01")
+
 
     print('\nbook')
     # Виведення всіх записів у книзі
@@ -71,19 +84,8 @@ def main():
         search_query = input("\nEnter a name or phone number to search('exit' to finish): ")
         search_results = book.search(search_query)
 
-    filename = './HW_12_AddressBook/address_book.pkl'
     # Збереження адресної книги на диск
-    book.save_to_file(filename)
-
-    # Завантаження адресної книги з диска
-    loaded_book = AddressBook()
-    loaded_book.load_from_file(filename)
-
-    print('\nloaded_book')
-    # Виведення всіх записів у книзі
-    for name, record in loaded_book.data.items():
-        print(record)
-
+    book.save_to_file(FILENAME)
 
 
 class Field:
@@ -187,7 +189,7 @@ class Record:
         try:
             self.birthday = datetime.strptime(birthday, "%Y-%m-%d").date()
         except ValueError:
-            raise ValueError("Invalid birthday date format. Use YYYY-MM-DD.")
+            raise ValueError("Invalid birthday date.")
 
 
     def days_to_birthday(self):
@@ -206,7 +208,7 @@ class Record:
         # Виведення даних у вигляді рядка при виклику print(), str()
         contact_info = f"Contact name: {self.name.value}"
         if self.phones:
-            contact_info += f", phones: {'; '.join(p.value for p in self.phones)}"
+            contact_info += f", phones: {'; '.join(phone.value for phone in self.phones)}"
         if self.birthday:
             contact_info += f", birthday: {self.birthday.strftime('%Y-%m-%d')}"
         return contact_info
@@ -230,12 +232,14 @@ class AddressBook(UserDict):
     def save_to_file(self, filename):
         # Завантаження до файлу
         with open(filename, "wb") as file:
-            pickle.dump(self.data, file)
+            dump(self.data, file)
 
     def load_from_file(self, filename):
         # Завантаження з файлу
+        if not path.exists(filename):
+            return
         with open(filename, "rb") as file:
-            self.data = pickle.load(file)
+            self.data = load(file)
 
 
     def search(self, query):
