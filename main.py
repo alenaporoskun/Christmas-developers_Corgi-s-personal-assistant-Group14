@@ -50,7 +50,7 @@ def main():
                 contact_edit = book.data[contact_name]
                 print(f'Contact found')
                 while True:
-                    edit = input('Enter what you want to edit(phone, birthday, address) (c - close): ')
+                    edit = input('Enter what you want to edit(phone, birthday, address, email) (c - close): ')
                     if edit.lower() == 'c':
                         break 
                     try:
@@ -63,10 +63,14 @@ def main():
                         elif edit == 'address':
                             new_address = input('Enter new address:')
                             contact_edit.set_address(new_address)
+                        elif edit == 'email':
+                            new_email = input('Enter new email:')
+                            contact_edit.edit_email(new_email)
+
                         else:
-                            print('Ivailid comand, please inter(phone, birthday, address) (c - close)')
+                            print('Ivailid comand, please inter(phone, birthday, address, email) (c - close)')
                     except ValueError:
-                        edit = input('Ivailid comand, please inter(phone, birthday, address) (c - close)')
+                        edit = input('Ivailid comand, please inter(phone, birthday, address, email) (c - close)')
             else:
                 print(f'Contact {contact_name} not found')
 
@@ -127,11 +131,19 @@ def fun_add_contact(address_book, name):
             break
         except ValueError:
             birthday = input(f'Enter the birthday (Year-month-day) (c - close): ')
+    email = input(f'Enter the email adress (c - close)')
+    while email != 'c':
+        try:
+            record.add_email(email)
+            break
+        except ValueError:
+            email = input('Enter a valid email format (c - close)')
 
     address = input(f'Enter the address of contact {name} (c - close): ')
     if address != 'c':
         record.set_address(address)
 
+    
 
 class Field:
     def __init__(self, value):
@@ -178,6 +190,14 @@ class Phone(Field):
 
     def __str__(self):
         return str(self._value)
+class Email(Field):
+    def __init__(self, value):
+        if not self.is_vallid_email(value):
+            raise ValueError('Invalid email format')
+        super().__init__(value)
+    @staticmethod
+    def is_vallid_email(value):
+        return '@' in value
 
 class Birthday(Field):
     def __init__(self, value):
@@ -220,7 +240,11 @@ class Record:
         # Додавання телефону
         phone = Phone(phone)
         self.phones.append(phone)
-    
+        
+    def add_email(self, email):
+        email = Email(email)
+        self.email = email
+        
     def edit_phone(self, old_phone, new_phone):
         # Редагування телефону
         found = False
@@ -233,6 +257,11 @@ class Record:
         if not found:
             raise ValueError(f"Phone {old_phone} not found in the record")
     
+    def edit_email(self, new_email):
+        if not Email.is_vallid_email(new_email):
+            raise ValueError('Invalid email format')
+        self.email.value = new_email
+
     def remove_phone(self, number):
         # Видалення телефону
         for phone in self.phones:
@@ -273,6 +302,8 @@ class Record:
         contact_info = f"Contact name: {self.name.value}"
         if self.phones:
             contact_info += f", phones: {'; '.join(p.value for p in self.phones)}"
+        if self.email:
+            contact_info += f', email:{self.email.value}'
         if self.birthday:
             contact_info += f", birthday: {self.birthday.strftime('%Y-%m-%d')}"
         if self.address:
