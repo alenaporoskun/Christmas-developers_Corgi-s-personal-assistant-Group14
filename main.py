@@ -3,6 +3,9 @@ from datetime import datetime
 from pickle import dump, load
 from os import path
 
+from rich.console import Console
+from rich.table import Table
+
 CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
 
 FILENAME = path.join(CURRENT_DIRECTORY, 'address_book.pkl')
@@ -29,6 +32,8 @@ def main():
 
         elif words_commands[0] == 'all-contacts':
             # Виведення всіх записів у книзі
+            print_table(book)
+            '''
             print('*'*10)
             print('Address book')
             # Перевірка на порожню книгу
@@ -39,6 +44,7 @@ def main():
                 for name, record in book.data.items():
                     print(record)
             print('*'*10)
+            '''
         
         elif words_commands[0] == 'edit-contact':
             # Редактування контакту
@@ -55,6 +61,7 @@ def main():
         command = input('Write a command (help - all commands): ')
         save_book(book)
 
+
 def load_book(FILENAME):
     try:
         with open(FILENAME, 'rb') as file: 
@@ -62,9 +69,11 @@ def load_book(FILENAME):
     except FileNotFoundError:
         return AddressBook()
 
+
 def save_book(address_book):
     with open(FILENAME, 'wb') as file:
         dump(address_book, file)
+
 
 def print_menu_commmands():
     print('''All commands:
@@ -75,6 +84,7 @@ def print_menu_commmands():
     - upcoming-birthdays - display a list of contacts whose birthday is a specified number of days from the current date
     - e                  - enter 'e' to exit the Assistant
     ''')
+
 
 def fun_add_contact(address_book, name):
     record = Record(name)
@@ -109,6 +119,7 @@ def fun_add_contact(address_book, name):
     if address != 'c':
         record.set_address(address)
 
+
 def fun_edit_contact(address_book):
     contact_name = input('Write the name of contact in which you want to change something: ')
     if contact_name in address_book.data:
@@ -138,6 +149,7 @@ def fun_edit_contact(address_book):
     else:
         print(f'Contact {contact_name} not found')
 
+
 def fun_delete_contact(address_book):
     contact_name = input('Enter the name of contact you want to delete: ')
     if contact_name in address_book.data:
@@ -149,6 +161,45 @@ def fun_delete_contact(address_book):
             print('Deletion canceled')
     else:
         print(f'contact with thw name {contact_name} not found.')
+
+def print_table(AddressBook):
+    # Виведення у вигляді таблиці
+
+    print('\nAddress book')
+
+    # Перевірка на порожню книгу
+    if not AddressBook.data:
+        print("Книга порожня.")
+        print('*'*10)
+        return 
+
+    # Створення об'єкту Console
+    console = Console()
+
+    # Створення таблиці
+    table = Table(show_header=True, header_style="bold magenta")
+
+    # Додайте стовпці до таблиці
+    table.add_column("Contact name", style="magenta", width=20, justify="center")
+    table.add_column("Phones", style="cyan", width=40, justify="center")
+    table.add_column("Birthday", style="green", width=20, justify="center")
+    table.add_column("Address", style="yellow", width=40, justify="center")
+    table.add_column("Email", style="red", width=40, justify="center")
+
+    # Додайте дані до таблиці
+    for name, record in AddressBook.data.items():
+        table.add_row(
+            str(record.name.value),
+            "; ".join(str(phone.value) for phone in record.phones),
+            record.birthday.strftime('%Y-%m-%d') if record.birthday else "",
+            str(record.address.value) if record.address else "",
+            str(record.email.value) if record.email else "",
+        )
+
+    # Виведіть таблицю
+    console.print(table)
+    print()
+
 
 def fun_upcoming_birthdays(address_book):
     # Команда для виводу наближених днів народження
