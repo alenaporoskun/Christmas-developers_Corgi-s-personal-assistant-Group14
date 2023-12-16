@@ -58,7 +58,7 @@ def main():
 
 def load_book(FILENAME):
     try:
-        with open(FILENAME, 'rb') as file: # address_book.pkl
+        with open(FILENAME, 'rb') as file: 
             return load(file)
     except FileNotFoundError:
         return AddressBook()
