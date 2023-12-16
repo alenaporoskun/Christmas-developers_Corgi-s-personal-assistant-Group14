@@ -1,7 +1,6 @@
 from collections import UserDict
 from datetime import datetime
-from pickle import dump
-from pickle import load
+from pickle import dump, load
 from os import path
 
 CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
