@@ -1,6 +1,5 @@
 from collections import UserDict
 from datetime import datetime
-import pickle
 from pickle import dump
 from pickle import load
 from os import path
@@ -25,11 +24,9 @@ def main():
         elif words_commands[0] == 'add-contact':
             # Додавання контакту
             while len(words_commands) < 2:
-                
                 command = input('Enter add-contact [name]: ')
                 words_commands = command.split()
             fun_add_contact(book, words_commands[1])
-
 
         elif words_commands[0] == 'all-contacts':
             # Виведення всіх записів у книзі
@@ -45,47 +42,16 @@ def main():
             print('*'*10)
         
         elif words_commands[0] == 'edit-contact':
-            contact_name = input('Write the name of contact in which you want to change something: ')
-            if contact_name in book.data:
-                contact_edit = book.data[contact_name]
-                print(f'Contact found')
-                while True:
-                    edit = input('Enter what you want to edit(phone, birthday, address, email) (c - close): ')
-                    if edit.lower() == 'c':
-                        break 
-                    try:
-                        if edit == 'phone':
-                            new_phone = input("Enter new phone number: ")
-                            contact_edit.edit_phone(contact_edit.phones[0].value, new_phone)
-                        elif edit == 'birthday':
-                            new_birthday = input('Enter new birthday:')
-                            contact_edit.set_birthday(new_birthday)
-                        elif edit == 'address':
-                            new_address = input('Enter new address:')
-                            contact_edit.set_address(new_address)
-                        elif edit == 'email':
-                            new_email = input('Enter new email:')
-                            contact_edit.edit_email(new_email)
-
-                        else:
-                            print('Ivailid comand, please inter(phone, birthday, address, email) (c - close)')
-                    except ValueError:
-                        edit = input('Ivailid comand, please inter(phone, birthday, address, email) (c - close)')
-            else:
-                print(f'Contact {contact_name} not found')
+            # Редактування контакту
+            fun_edit_contact(book)
 
         elif words_commands[0] == 'delete-contact':
-            contact_name = input('Enter the name of contact you want to delete:')
-            if contact_name in book.data:
-                question = input(f'Are you sure you want to delete this contact {contact_name}? (yes or no):')
-                if question == 'yes':
-                    del book.data[contact_name]
-                    print('Contact deleted')
-                else:
-                    print('Deletion canceld')
-            else:
-                print(f'contact with thw name {contact_name} not found')
+            # Видалення контакту
+            fun_delete_contact(book)
 
+        elif words_commands[0] == 'upcoming-birthdays':
+            # Вивід контакту у якого через n днів день народження
+            fun_upcoming_birthdays(book)
 
         command = input('Write a command (help - all commands): ')
         save_book(book)
@@ -93,23 +59,22 @@ def main():
 def load_book(FILENAME):
     try:
         with open(FILENAME, 'rb') as file: # address_book.pkl
-            return pickle.load(file)
+            return load(file)
     except FileNotFoundError:
         return AddressBook()
 
 def save_book(address_book):
     with open(FILENAME, 'wb') as file:
-        pickle.dump(address_book, file)
-
-
+        dump(address_book, file)
 
 def print_menu_commmands():
     print('''All commands:
     - add-contact [name] - add contact with it's name
-    - all-contacts - displays all contacts in the address book
-    - e - enter 'e' to exit the Assistant
-    - edit-contact - editing contact information
-    - delete-contact - deleting contact
+    - edit-contact       - editing contact information
+    - delete-contact     - deleting contact
+    - all-contacts       - displays all contacts in the address book
+    - upcoming-birthdays - display a list of contacts whose birthday is a specified number of days from the current date
+    - e                  - enter 'e' to exit the Assistant
     ''')
 
 def fun_add_contact(address_book, name):
@@ -125,25 +90,100 @@ def fun_add_contact(address_book, name):
             phone = input(f'Enter the phone (10 digits) (c - close): ')
 
     birthday = input(f'Enter the birthday of contact {name} (c - close): ')
+
     while birthday != 'c':
         try:
             record.set_birthday(birthday)
             break
         except ValueError:
             birthday = input(f'Enter the birthday (Year-month-day) (c - close): ')
-    email = input(f'Enter the email adress (c - close)')
+
+    email = input(f'Enter the email adress (c - close): ')
     while email != 'c':
         try:
             record.add_email(email)
             break
         except ValueError:
-            email = input('Enter a valid email format (c - close)')
+            email = input('Enter a valid email format (c - close): ')
 
     address = input(f'Enter the address of contact {name} (c - close): ')
     if address != 'c':
         record.set_address(address)
 
-    
+def fun_edit_contact(address_book):
+    contact_name = input('Write the name of contact in which you want to change something: ')
+    if contact_name in address_book.data:
+        contact_edit = address_book.data[contact_name]
+        print(f'Contact found')
+        while True:
+            edit = input('Enter what you want to edit(phone, birthday, address, email) (c - close): ')
+            if edit.lower() == 'c':
+                break 
+            try:
+                if edit == 'phone':
+                    new_phone = input("Enter new phone number: ")
+                    contact_edit.edit_phone(contact_edit.phones[0].value, new_phone)
+                elif edit == 'birthday':
+                    new_birthday = input('Enter new birthday: ')
+                    contact_edit.set_birthday(new_birthday)
+                elif edit == 'address':
+                    new_address = input('Enter new address: ')
+                    contact_edit.set_address(new_address)
+                elif edit == 'email':
+                    new_email = input('Enter new email: ')
+                    contact_edit.edit_email(new_email)
+                else:
+                    print('Ivailid comand, please enter(phone, birthday, address, email) (c - close): ')
+            except ValueError:
+                edit = input('Ivailid comand, please enter(phone, birthday, address, email) (c - close): ')
+    else:
+        print(f'Contact {contact_name} not found')
+
+def fun_delete_contact(address_book):
+    contact_name = input('Enter the name of contact you want to delete: ')
+    if contact_name in address_book.data:
+        question = input(f'Are you sure you want to delete this contact {contact_name}? (yes or no): ')
+        if question == 'yes':
+            del address_book.data[contact_name]
+            print('Contact deleted')
+        else:
+            print('Deletion canceled')
+    else:
+        print(f'contact with thw name {contact_name} not found.')
+
+def fun_upcoming_birthdays(address_book):
+    # Команда для виводу наближених днів народження
+    days_count = input('Enter the number of days to check upcoming birthdays: ')
+    try:
+        days_count = int(days_count)
+        if days_count < 0:
+            raise ValueError("Please enter a non-negative number of days.")
+    except ValueError:
+        print("Invalid input. Please enter a non-negative integer.")
+
+    upcoming_birthdays = get_upcoming_birthdays(address_book, days_count)
+    if upcoming_birthdays:
+        print('*' * 10)
+        print(f'Upcoming birthdays within the next {days_count} days:')
+        for contact in upcoming_birthdays:
+            print(contact)
+            print('*' * 10)
+    else:
+        print(f'No upcoming birthdays within the next {days_count} days.')
+
+def get_upcoming_birthdays(address_book, days_count):
+    upcoming_birthdays = []
+    today = datetime.today()
+    for record in address_book.data.values():
+        if record.birthday:
+            next_birthday = datetime(today.year, record.birthday.month, record.birthday.day)
+            if next_birthday < today:
+                next_birthday = datetime(today.year + 1, record.birthday.month, record.birthday.day)
+
+            delta = next_birthday - today
+            if 0 <= delta.days <= days_count:
+                upcoming_birthdays.append(record)
+    return upcoming_birthdays
 
 class Field:
     def __init__(self, value):
@@ -190,14 +230,29 @@ class Phone(Field):
 
     def __str__(self):
         return str(self._value)
+    
 class Email(Field):
     def __init__(self, value):
         if not self.is_vallid_email(value):
             raise ValueError('Invalid email format')
         super().__init__(value)
+
     @staticmethod
     def is_vallid_email(value):
         return '@' in value
+    
+    # getter
+    @property
+    def value(self):
+        return self._value
+    
+    # setter
+    @value.setter
+    def value(self, new_value):
+        self._value = new_value
+
+    def __str__(self):
+        return str(self._value)
 
 class Birthday(Field):
     def __init__(self, value):
@@ -232,12 +287,11 @@ class Record:
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
+        self.email = None
         self.birthday = None
         self.address = None
 
-    # реалізація класу
     def add_phone(self, phone):
-        # Додавання телефону
         phone = Phone(phone)
         self.phones.append(phone)
         
@@ -261,6 +315,7 @@ class Record:
         if not Email.is_vallid_email(new_email):
             raise ValueError('Invalid email format')
         self.email.value = new_email
+
 
     def remove_phone(self, number):
         # Видалення телефону
@@ -302,8 +357,8 @@ class Record:
         contact_info = f"Contact name: {self.name.value}"
         if self.phones:
             contact_info += f", phones: {'; '.join(p.value for p in self.phones)}"
-        if self.email:
-            contact_info += f', email:{self.email.value}'
+        if self.email is not None:
+            contact_info += f", email: {self.email.value}"
         if self.birthday:
             contact_info += f", birthday: {self.birthday.strftime('%Y-%m-%d')}"
         if self.address:
@@ -329,12 +384,12 @@ class AddressBook(UserDict):
     def save_to_file(self, filename):
         # Завантаження до файлу
         with open(filename, "wb") as file:
-            pickle.dump(self.data, file)
+            dump(self.data, file)
 
     def load_from_file(self, filename):
         # Завантаження з файлу
         with open(filename, "rb") as file:
-            self.data = pickle.load(file)
+            self.data = load(file)
 
     def search(self, query):
         # Пошук за кількома цифрами номера телефону або літерами імені 
