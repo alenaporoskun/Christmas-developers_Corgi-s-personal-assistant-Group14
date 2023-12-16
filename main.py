@@ -6,17 +6,33 @@ from os import path
 from rich.console import Console
 from rich.table import Table
 
+from prompt_toolkit import prompt
+from prompt_toolkit.completion import WordCompleter
+
+
+# Отримання поточного каталогу, в якому знаходиться виконуваний файл
 CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
 
+# Створення повного шляху до файлу "address_book.pkl" в поточному каталозі
 FILENAME = path.join(CURRENT_DIRECTORY, 'address_book.pkl')
 
 def main():
-    # Створення нової адресної книги
+    # Завантаження адресної книги або створення нової
     book = load_book(FILENAME)
 
-    print('Hi! I am your Personal Assistant. How can I help you?')
-    command = input('Write a command (help - all commands): ')
-    while command != 'e':
+    print("Hi! I am Santa's Personal Assistant - Mr.Corgi. How can I help you?")
+
+    # Список доступних команд
+    commands = ['add-contact', 'all-contacts', 'edit-contact', 'delete-contact', 'upcoming-birthdays', 'exit']
+
+    # Створення об'єкту WordCompleter, який використовується для автодоповнення команд
+    completer = WordCompleter(commands, ignore_case=True)
+
+    # Запит на введення команди від користувача з можливістю автодоповнення
+    command = prompt('Write a command (help - all commands): ', completer=completer)
+
+    # Цикл для команд в консолі 
+    while command != 'exit':
         words_commands = command.split() # розділення рядка на масив слів
 
         if command == 'help':
@@ -26,7 +42,7 @@ def main():
         elif words_commands[0] == 'add-contact':
             # Додавання контакту
             while len(words_commands) < 2:
-                command = input('Enter add-contact [name]: ')
+                command = input('Enter command "add-contact [name]": ')
                 words_commands = command.split()
             fun_add_contact(book, words_commands[1])
 
@@ -46,11 +62,18 @@ def main():
             # Вивід контакту у якого через n днів день народження
             fun_upcoming_birthdays(book)
 
-        command = input('Write a command (help - all commands): ')
+        else: 
+            print("The command was not found. Please enter another command.")
+
+        # Запит на введення команди від користувача з можливістю автодоповнення
+        command = prompt('Write a command (help - all commands): ', completer=completer)
+
+        # Збереження книги
         save_book(book)
 
 
 def load_book(FILENAME):
+    # Завантаження адресної книги з файлу
     try:
         with open(FILENAME, 'rb') as file: 
             return load(file)
@@ -59,18 +82,20 @@ def load_book(FILENAME):
 
 
 def save_book(address_book):
+    # Збереження адресної книги у файл
     with open(FILENAME, 'wb') as file:
         dump(address_book, file)
 
 
 def print_menu_commmands():
+    # Друк команд
     print('''All commands:
     - add-contact [name] - add contact with it's name
     - edit-contact       - editing contact information
     - delete-contact     - deleting contact
     - all-contacts       - displays all contacts in the address book
     - upcoming-birthdays - display a list of contacts whose birthday is a specified number of days from the current date
-    - e                  - enter 'e' to exit the Assistant
+    - exit                  - enter 'exit' to exit the Assistant
     ''')
 
 
@@ -82,7 +107,6 @@ def fun_add_contact(address_book, name):
         try:
             record.add_phone(phone)
             phone = input(f'Enter the phone of contact {name} (c - close): ')
-            #break
         except ValueError:
             phone = input(f'Enter the phone (10 digits) (c - close): ')
 
@@ -150,6 +174,7 @@ def fun_delete_contact(address_book):
     else:
         print(f'contact with thw name {contact_name} not found.')
 
+
 def print_table(AddressBook):
     # Виведення у вигляді таблиці
 
@@ -157,8 +182,7 @@ def print_table(AddressBook):
 
     # Перевірка на порожню книгу
     if not AddressBook.data:
-        print("Книга порожня.")
-        print('*'*10)
+        print("Книга порожня.\n")
         return 
 
     # Створення об'єкту Console
@@ -167,14 +191,14 @@ def print_table(AddressBook):
     # Створення таблиці
     table = Table(show_header=True, header_style="bold magenta")
 
-    # Додайте стовпці до таблиці
+    # Додавання стовпців до таблиці
     table.add_column("Contact name", style="magenta", width=20, justify="center")
     table.add_column("Phones", style="cyan", width=40, justify="center")
     table.add_column("Birthday", style="green", width=20, justify="center")
     table.add_column("Address", style="yellow", width=40, justify="center")
     table.add_column("Email", style="red", width=40, justify="center")
 
-    # Додайте дані до таблиці
+    # Додавання даних до таблиці
     for name, record in AddressBook.data.items():
         table.add_row(
             str(record.name.value),
@@ -184,7 +208,7 @@ def print_table(AddressBook):
             str(record.email.value) if record.email else "",
         )
 
-    # Виведіть таблицю
+    # Виведення таблиці
     console.print(table)
     print()
 
@@ -209,19 +233,36 @@ def fun_upcoming_birthdays(address_book):
     else:
         print(f'No upcoming birthdays within the next {days_count} days.')
 
-def get_upcoming_birthdays(address_book, days_count):
-    upcoming_birthdays = []
-    today = datetime.today()
-    for record in address_book.data.values():
-        if record.birthday:
-            next_birthday = datetime(today.year, record.birthday.month, record.birthday.day)
-            if next_birthday < today:
-                next_birthday = datetime(today.year + 1, record.birthday.month, record.birthday.day)
 
-            delta = next_birthday - today
-            if 0 <= delta.days <= days_count:
+def get_upcoming_birthdays(address_book, days_count):
+    # Список для зберігання записів з найближчими днями народженнями
+    upcoming_birthdays = []    
+
+    # Отримання поточної дати та часу                
+    today = datetime.today()          
+
+    # Перебір записів у адресній книзі       
+    for record in address_book.data.values():
+        # Перевірка, чи є в запису вказана дата народження
+
+        if record.birthday:                    
+            # Формування дати наступного дня народження
+            next_birthday = datetime(today.year, record.birthday.month, record.birthday.day)  
+
+            # Якщо день народження вже минув у поточному році, обчислити для наступного року        
+            if next_birthday < today:                                                                  
+                next_birthday = datetime(today.year + 1, record.birthday.month, record.birthday.day)  
+
+            # Обчислення різниці в часі між сьогоднішньою датою і наступним днем народження
+            delta = next_birthday - today           
+
+            # Перевірка, чи день народження відбудеться в межах визначеної кількості днів                                                   
+            if 0 <= delta.days <= days_count:                                                          
                 upcoming_birthdays.append(record)
-    return upcoming_birthdays
+
+    # Повернення списку з записами, у яких найближчий день народження наступає впродовж зазначеної кількості днів
+    return upcoming_birthdays                                                                          
+
 
 class Field:
     def __init__(self, value):
@@ -249,7 +290,6 @@ class Phone(Field):
     def __init__(self, value):
         if not self.is_valid_phone(value):
             raise ValueError("Invalid phone number format")
-            #print("Invalid phone number format")
         super().__init__(value)
 
     @staticmethod
