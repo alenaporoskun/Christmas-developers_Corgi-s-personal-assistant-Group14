@@ -1,91 +1,132 @@
 from collections import UserDict
 from datetime import datetime
+import pickle
 from pickle import dump
 from pickle import load
 from os import path
 
-CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
-
-FILENAME = path.join(CURRENT_DIRECTORY, 'address_book.pkl')
-
 def main():
-
     # Створення нової адресної книги
-    book = AddressBook()
+    book = load_book()
 
-    # Завантаження адресної книги з диска
-    if path.exists(FILENAME):
-        print('\nLoad contacts...')
-        book.load_from_file(FILENAME)
-    else:
-        # Додавання записів до пустої книги
-        print('\nAdd contacts...')
+    print('Hi! I am your Personal Assistant. How can I help you?')
+    command = input('Write a command (help - all commands): ')
+    while command != 'e':
+        words_commands = command.split() # розділення рядка на масив слів
 
-        # Створення запису для John
-        john_record = Record("John")
-        john_record.add_phone("1234567890")
-        john_record.add_phone("5555555555")
+        if command == 'help':
+            # Вивід меню команд
+            print_menu_commmands()
 
-        # Додавання запису John до адресної книги
-        book.add_record(john_record)
-
-        # Створення та додавання нового запису для Jane
-        jane_record = Record("Jane")
-        jane_record.add_phone("9876543210")
-        book.add_record(jane_record)
-
-        # Знаходження та редагування телефону для John
-        john = book.find("John")
-        john.edit_phone("1234567890", "1112223333")
-
-        # Встановлення дати народження для John
-        john_record.set_birthday("2001-08-19")
-
-        # print(john_record)                      # Виведення: Contact name: John, phones: 1112223333; 5555555555, birthday: 2001-08-19
-        # print(john_record.days_to_birthday())   # Виведення: There are 319 days left before the birthday.
-
-        # Створення записів для інших котанктів
-        kol_record = Record("Kol")
-        anna_record = Record("Anna")
-        lily_record = Record("Lily")
-
-        # Додавання нових записів до адресної книги
-        book.add_record(kol_record)
-        book.add_record(anna_record)
-        book.add_record(lily_record)
-
-        # Додавання номерів до контактів
-        kol_record.add_phone("1234567890")
-        anna_record.add_phone("0667954896")
-        lily_record.add_phone("0955739843")
-
-        # Встановлення дати народження контактів
-        anna_record.set_birthday("2003-02-24")
-        lily_record.set_birthday("2000-10-01")
+        elif words_commands[0] == 'add-contact':
+            # Додавання контакту
+            while len(words_commands) < 2:
+                
+                command = input('Enter add-contact [name]: ')
+                words_commands = command.split()
+            fun_add_contact(book, words_commands[1])
 
 
-    print('\nbook')
-    # Виведення всіх записів у книзі
-    for name, record in book.data.items():
-        print(record)
+        elif words_commands[0] == 'all-contacts':
+            # Виведення всіх записів у книзі
+            print('*'*10)
+            print('Address book')
+            # Перевірка на порожню книгу
+            if not book.data:
+                print("Книга порожня.")
+            else:
+                # Виведення записів
+                for name, record in book.data.items():
+                    print(record)
+            print('*'*10)
+        
+        elif words_commands[0] == 'edit-contact':
+            contact_name = input('Write the name of contact in which you want to change something: ')
+            if contact_name in book.data:
+                contact_edit = book.data[contact_name]
+                print(f'Contact found')
+                while True:
+                    edit = input('Enter what you want to edit(phone, birthday, address) (c - close): ')
+                    if edit.lower() == 'c':
+                        break 
+                    try:
+                        if edit == 'phone':
+                            new_phone = input("Enter new phone number: ")
+                            contact_edit.edit_phone(contact_edit.phones[0].value, new_phone)
+                        elif edit == 'birthday':
+                            new_birthday = input('Enter new birthday:')
+                            contact_edit.set_birthday(new_birthday)
+                        elif edit == 'address':
+                            new_address = input('Enter new address:')
+                            contact_edit.set_address(new_address)
+                        else:
+                            print('Ivailid comand, please inter(phone, birthday, address) (c - close)')
+                    except ValueError:
+                        edit = input('Ivailid comand, please inter(phone, birthday, address) (c - close)')
+            else:
+                print(f'Contact {contact_name} not found')
 
-    # Пошук контактів за іменем або номером телефону
-    search_query = input("\nEnter a name or phone number to search('exit' to finish): ")
-    search_results = book.search(search_query)
-    while search_query != 'exit': 
-        if search_results:
-            print("Search results:")
-            for record in search_results:
-                print(record)
-            search_results = None
-        else:
-            print("No matching contacts found.")
+        elif words_commands[0] == 'delete-contact':
+            contact_name = input('Enter the name of contact you want to delete:')
+            if contact_name in book.data:
+                question = input(f'Are you sure you want to delete this contact {contact_name}? (yes or no):')
+                if question == 'yes':
+                    del book.data[contact_name]
+                    print('Contact deleted')
+                else:
+                    print('Deletion canceld')
+            else:
+                print(f'contact with thw name {contact_name} not found')
 
-        search_query = input("\nEnter a name or phone number to search('exit' to finish): ")
-        search_results = book.search(search_query)
 
-    # Збереження адресної книги на диск
-    book.save_to_file(FILENAME)
+        command = input('Write a command (help - all commands): ')
+        save_book(book)
+
+def load_book():
+    try:
+        with open('address_book.pkl', 'rb') as file:
+            return pickle.load(file)
+    except FileNotFoundError:
+        return AddressBook()
+
+def save_book(address_book):
+    with open('address_book.pkl', 'wb') as file:
+        pickle.dump(address_book, file)
+
+
+
+def print_menu_commmands():
+    print('''All commands:
+    - add-contact [name] - add contact with it's name
+    - all-contacts - displays all contacts in the address book
+    - e - enter 'e' to exit the Assistant
+    - edit-contact - editing contact information
+    - delete-contact - deleting contact
+    ''')
+
+def fun_add_contact(address_book, name):
+    record = Record(name)
+    address_book.add_record(record)
+    phone = input(f'Enter the phone of contact {name} (c - close): ')
+    while phone != 'c':
+        try:
+            record.add_phone(phone)
+            phone = input(f'Enter the phone of contact {name} (c - close): ')
+            #break
+        except ValueError:
+            phone = input(f'Enter the phone (10 digits) (c - close): ')
+
+    birthday = input(f'Enter the birthday of contact {name} (c - close): ')
+    while birthday != 'c':
+        try:
+            record.set_birthday(birthday)
+            break
+        except ValueError:
+            birthday = input(f'Enter the birthday (Year-month-day) (c - close): ')
+
+    address = input(f'Enter the address of contact {name} (c - close): ')
+    if address != 'c':
+        record.set_address(address)
 
 
 class Field:
@@ -114,6 +155,7 @@ class Phone(Field):
     def __init__(self, value):
         if not self.is_valid_phone(value):
             raise ValueError("Invalid phone number format")
+            #print("Invalid phone number format")
         super().__init__(value)
 
     @staticmethod
@@ -147,11 +189,27 @@ class Birthday(Field):
     def value(self, new_value):
         self._value = new_value
 
+class Address(Field):
+    def __init__(self, value):
+        super().__init__(value)
+
+    # getter
+    @property
+    def value(self):
+        return self._value
+    
+    # setter
+    @value.setter
+    def value(self, new_value):
+        self._value = new_value
+
+
 class Record:
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
         self.birthday = None
+        self.address = None
 
     # реалізація класу
     def add_phone(self, phone):
@@ -189,8 +247,10 @@ class Record:
         try:
             self.birthday = datetime.strptime(birthday, "%Y-%m-%d").date()
         except ValueError:
-            raise ValueError("Invalid birthday date.")
+            raise ValueError("Invalid birthday date format. Use YYYY-MM-DD.")
 
+    def set_address(self, address):
+        self.address = Birthday(address)
 
     def days_to_birthday(self):
         # Знаходження кількості днів до дня народження
@@ -208,9 +268,11 @@ class Record:
         # Виведення даних у вигляді рядка при виклику print(), str()
         contact_info = f"Contact name: {self.name.value}"
         if self.phones:
-            contact_info += f", phones: {'; '.join(phone.value for phone in self.phones)}"
+            contact_info += f", phones: {'; '.join(p.value for p in self.phones)}"
         if self.birthday:
             contact_info += f", birthday: {self.birthday.strftime('%Y-%m-%d')}"
+        if self.address:
+            contact_info += f", address: {self.address.value}"
         return contact_info
 
 
@@ -232,15 +294,12 @@ class AddressBook(UserDict):
     def save_to_file(self, filename):
         # Завантаження до файлу
         with open(filename, "wb") as file:
-            dump(self.data, file)
+            pickle.dump(self.data, file)
 
     def load_from_file(self, filename):
         # Завантаження з файлу
-        if not path.exists(filename):
-            return
         with open(filename, "rb") as file:
-            self.data = load(file)
-
+            self.data = pickle.load(file)
 
     def search(self, query):
         # Пошук за кількома цифрами номера телефону або літерами імені 
