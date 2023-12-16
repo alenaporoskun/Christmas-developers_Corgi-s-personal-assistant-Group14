@@ -33,18 +33,6 @@ def main():
         elif words_commands[0] == 'all-contacts':
             # Виведення всіх записів у книзі
             print_table(book)
-            '''
-            print('*'*10)
-            print('Address book')
-            # Перевірка на порожню книгу
-            if not book.data:
-                print("Книга порожня.")
-            else:
-                # Виведення записів
-                for name, record in book.data.items():
-                    print(record)
-            print('*'*10)
-            '''
         
         elif words_commands[0] == 'edit-contact':
             # Редактування контакту
