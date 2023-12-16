@@ -83,32 +83,10 @@ def main():
 
         elif words_commands[0] == 'upcoming-birthdays':
             fun_upcoming_birthdays(book)
-
-
-# Додана нова команда для виводу наближених днів народження
-        elif words_commands[0] == 'upcoming-birthdays':
-            # Додана нова команда для виводу наближених днів народження
-            days_count = input('Enter the number of days to check upcoming birthdays: ')
-            try:
-                days_count = int(days_count)
-                if days_count < 0:
-                    raise ValueError("Please enter a non-negative number of days.")
-            except ValueError:
-                print("Invalid input. Please enter a non-negative integer.")
-                continue
-
-            upcoming_birthdays = get_upcoming_birthdays(book, days_count)
-            if upcoming_birthdays:
-                print('*' * 10)
-                print(f'Upcoming birthdays within the next {days_count} days:')
-                for contact in upcoming_birthdays:
-                    print(contact)
-                print('*' * 10)
-            else:
-                print(f'No upcoming birthdays within the next {days_count} days.')
-
+            
         command = input('Write a command (help - all commands): ')
         save_book(book)
+
 
 def load_book(FILENAME):
     try:
@@ -120,7 +98,6 @@ def load_book(FILENAME):
 def save_book(address_book):
     with open(FILENAME, 'wb') as file:
         dump(address_book, file)
-
 
 def print_menu_commmands():
     print('''All commands:
