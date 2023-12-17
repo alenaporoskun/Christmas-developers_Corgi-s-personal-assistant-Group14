@@ -16,6 +16,8 @@ CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
 # Створення повного шляху до файлу "address_book.pkl" в поточному каталозі
 FILENAME = path.join(CURRENT_DIRECTORY, 'address_book.pkl')
 
+FILENAME2 = path.join(CURRENT_DIRECTORY, 'notes.pkl')
+            
 def main():
     # Завантаження адресної книги або створення нової
     book = load_book(FILENAME)
@@ -23,7 +25,7 @@ def main():
     print("Hi! I am Santa's Personal Assistant - Mr.Corgi. How can I help you?")
 
     # Список доступних команд
-    commands = ['add-contact', 'all-contacts', 'edit-contact', 'delete-contact', 'upcoming-birthdays', 'exit']
+    commands = ['add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'upcoming-birthdays', 'add-note', 'show-notes', 'exit']
 
     # Створення об'єкту WordCompleter, який використовується для автодоповнення команд
     completer = WordCompleter(commands, ignore_case=True)
@@ -46,7 +48,7 @@ def main():
                 words_commands = command.split()
             fun_add_contact(book, words_commands[1])
 
-        elif words_commands[0] == 'all-contacts':
+        elif words_commands[0] == 'show-contacts':
             # Виведення всіх записів у книзі
             print_table(book)
         
@@ -61,6 +63,14 @@ def main():
         elif words_commands[0] == 'upcoming-birthdays':
             # Вивід контакту у якого через n днів день народження
             fun_upcoming_birthdays(book)
+        
+        elif words_commands[0] == 'add-note':
+            # Додавання нотатки
+            fun_add_note(book)
+
+        elif words_commands[0] == 'show-notes':
+            # Вивід нотаток
+            fun_show_notes(book, FILENAME2)
 
         else: 
             print("The command was not found. Please enter another command.")
@@ -93,41 +103,65 @@ def print_menu_commmands():
     - add-contact [name] - add contact with it's name
     - edit-contact       - editing contact information
     - delete-contact     - deleting contact
-    - all-contacts       - displays all contacts in the address book
+    - show-contacts      - displays all contacts in the address book
     - upcoming-birthdays - display a list of contacts whose birthday is a specified number of days from the current date
-    - exit                  - enter 'exit' to exit the Assistant
+    - add-note           - add note with author if he/she is in the contact book  
+    - exit               - enter 'exit' to exit the Assistant
     ''')
 
 
 def fun_add_contact(address_book, name):
+    # Функція для додавання контакту в адресну книгу
+
+    # Створюється новий запис (контакт) з ім'ям name
     record = Record(name)
+
+    # Додається створений запис в адресну книгу
     address_book.add_record(record)
+
+    # Користувачу пропонується ввести телефон для контакту
     phone = input(f'Enter the phone of contact {name} (c - close): ')
+
+    # Ввод телефонів для контакту, можливо введення 'c' для закриття
     while phone != 'c':
         try:
+            # Додає телефон до запису контакту
             record.add_phone(phone)
             phone = input(f'Enter the phone of contact {name} (c - close): ')
         except ValueError:
+            # Обробка виключення, якщо введено некоректний телефон
             phone = input(f'Enter the phone (10 digits) (c - close): ')
 
+    # Користувачу пропонується ввести день народження для контакту
     birthday = input(f'Enter the birthday of contact {name} (c - close): ')
 
+    # Ввод дня народження для контакту, можливо введення 'c' для закриття
     while birthday != 'c':
         try:
+            # Встановлює день народження для запису контакту
             record.set_birthday(birthday)
             break
         except ValueError:
+            # Обробка виключення, якщо введено некоректний формат дня народження
             birthday = input(f'Enter the birthday (Year-month-day) (c - close): ')
 
+    # Користувачу пропонується ввести електронну пошту для контакту
     email = input(f'Enter the email adress (c - close): ')
+
+     # Ввод електронної пошти для контакту, можливо введення 'c' для закриття
     while email != 'c':
         try:
+             # Додає електронну пошту до запису контакту
             record.add_email(email)
             break
         except ValueError:
+            # Обробка виключення, якщо введено некоректний формат електронної пошти
             email = input('Enter a valid email format (c - close): ')
 
+    # Користувачу пропонується ввести адресу для контакту
     address = input(f'Enter the address of contact {name} (c - close): ')
+
+    # Якщо адреса не 'c', встановлює адресу для запису контакту
     if address != 'c':
         record.set_address(address)
 
@@ -163,6 +197,7 @@ def fun_edit_contact(address_book):
 
 
 def fun_delete_contact(address_book):
+    # Видалення контакту з книги контактів
     contact_name = input('Enter the name of contact you want to delete: ')
     if contact_name in address_book.data:
         question = input(f'Are you sure you want to delete this contact {contact_name}? (yes or no): ')
@@ -178,18 +213,18 @@ def fun_delete_contact(address_book):
 def print_table(AddressBook):
     # Виведення у вигляді таблиці
 
-    print('\nAddress book')
-
     # Перевірка на порожню книгу
     if not AddressBook.data:
-        print("Книга порожня.\n")
+        print("\n Книга порожня.\n")
         return 
 
     # Створення об'єкту Console
     console = Console()
 
     # Створення таблиці
-    table = Table(show_header=True, header_style="bold magenta")
+    table = Table(title="Contact book", show_header=True, header_style="bold magenta")
+    table.title_align = "center"
+    table.title_style = "bold yellow"
 
     # Додавання стовпців до таблиці
     table.add_column("Contact name", style="magenta", width=20, justify="center")
@@ -262,6 +297,41 @@ def get_upcoming_birthdays(address_book, days_count):
 
     # Повернення списку з записами, у яких найближчий день народження наступає впродовж зазначеної кількості днів
     return upcoming_birthdays                                                                          
+
+
+def fun_add_note(address_book):
+    # Функція для додавання нотаток в адресну книгу
+
+    author = input('Enter an author of note (c - close): ')
+    if author not in address_book.data:
+        print('The author is not found in the contact book.')
+        return
+
+    # Користувачу пропонується ввести текст нотатки (до тих пір, поки не введе 'c' або 'C' для закриття)
+    note_text = input('Enter your note (c - close): ')
+
+    while note_text.lower() != 'c':
+        # Додає нотатку до об'єкту notes_manager в адресній книзі
+        address_book.notes_manager.add_note(author, note_text)
+
+        # Виводить повідомлення про успішне додавання нотатки
+        print('Note added successfully!')
+
+         # Знову запитує користувача ввести нотатку або закрити введення
+        note_text = input('Enter your note (c - close): ')
+
+    # Після закриття введення зберігає всі нотатки в файл з ім'ям FILENAME2
+    address_book.notes_manager.save_notes(FILENAME2)
+
+
+def fun_show_notes(address_book, filename):
+    # Функція для відображення нотаток з файла
+
+    # Завантажує нотатки з файлу в об'єкт notes_manager
+    address_book.notes_manager.load_notes(filename)
+
+    # Виводить всі нотатки за допомогою методу print_notes
+    address_book.notes_manager.print_notes()
 
 
 class Field:
@@ -360,6 +430,49 @@ class Address(Field):
     def value(self, new_value):
         self._value = new_value
 
+class Notes:
+    def __init__(self, text, author):
+        self.text = text
+        self.author = author
+
+    def __str__(self):
+        return f"{self.text} (by {self.author})"
+    
+class NoteManager:
+    def __init__(self):
+        self.notes = []
+
+    def add_note(self, author, text):
+        note = Notes(text, author)
+        self.notes.append(note)
+
+    def print_notes(self):
+        if self.notes:
+            console = Console()
+            table = Table(title="Wish list", show_header=True, header_style="bold magenta")
+            table.title_align = "center"
+            table.title_style = "bold yellow"
+            table.add_column("Index", style="cyan", width=5, justify="center")
+            table.add_column("Note", style="green")
+            table.add_column("Author", style="blue")  # Додано новий стовпець для автора
+
+            for i, note in enumerate(self.notes, start=1):
+                table.add_row(str(i), note.text, note.author)
+
+            console.print(table)
+        else:
+            print("No notes available.")
+
+    def save_notes(self, filename):
+        with open(filename, 'wb') as file:
+            dump(self.notes, file)
+
+    def load_notes(self, filename):
+        try:
+            with open(filename, 'rb') as file:
+                self.notes = load(file)
+        except FileNotFoundError:
+            self.notes = []
 
 class Record:
     def __init__(self, name):
@@ -368,6 +481,7 @@ class Record:
         self.email = None
         self.birthday = None
         self.address = None
+        self.notes = []
 
     def add_phone(self, phone):
         phone = Phone(phone)
@@ -376,7 +490,7 @@ class Record:
     def add_email(self, email):
         email = Email(email)
         self.email = email
-        
+            
     def edit_phone(self, old_phone, new_phone):
         # Редагування телефону
         found = False
@@ -393,7 +507,6 @@ class Record:
         if not Email.is_vallid_email(new_email):
             raise ValueError('Invalid email format')
         self.email.value = new_email
-
 
     def remove_phone(self, number):
         # Видалення телефону
@@ -441,13 +554,26 @@ class Record:
             contact_info += f", birthday: {self.birthday.strftime('%Y-%m-%d')}"
         if self.address:
             contact_info += f", address: {self.address.value}"
+        if self.notes:
+            contact_info += f" \nNotes: \n "
+            for i, note in enumerate(self.notes, start = 1):
+                contact_info += f"{i}.{note}\n"
         return contact_info
 
 
 class AddressBook(UserDict):
-    # реалізація класу
     def add_record(self, record):
         self.data[record.name.value] = record
+    
+    def __init__(self):
+        super().__init__()
+        self.notes_manager = NoteManager()
+
+    def add_note(self, text):
+        self.notes_manager.add_note(text)
+
+    def print_notes(self):
+        self.notes_manager.print_notes()
 
     def find(self, name):
         return self.data.get(name)
