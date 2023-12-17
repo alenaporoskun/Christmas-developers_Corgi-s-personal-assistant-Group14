@@ -28,7 +28,8 @@ def main():
     print("Hi! I am Santa's Personal Assistant - Mr.Corgi. How can I help you?")
 
     # Список доступних команд
-    commands = ['add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'upcoming-birthdays', 'add-note', 'show-notes', 'exit']
+    commands = ['add-contact', 'show-contacts', 'edit-contact', 'delete-contact',
+                'upcoming-birthdays', 'add-note', 'show-notes', 'search-contact', 'exit']
 
     # Створення об'єкту WordCompleter, який використовується для автодоповнення команд
     completer = WordCompleter(commands, ignore_case=True)
@@ -81,6 +82,10 @@ def main():
             # Вивід нотаток
             fun_show_notes(book, FILENAME2)
 
+        elif command == 'search-contact':
+            # Пошук контактів серед контактів книги
+            book.search_contact()
+
         else: 
             print("The command was not found. Please enter another command.")
 
@@ -109,11 +114,12 @@ def save_book(address_book):
 def print_menu_commmands():
     # Друк команд
     print('''All commands:
-    - add-contact [name] - add contact with it's name
+    - add-contact        - add contact with it's name
     - edit-contact       - editing contact information
     - delete-contact     - deleting contact
     - show-contacts      - displays all contacts in the address book
     - upcoming-birthdays - display a list of contacts whose birthday is a specified number of days from the current date
+    - search-contact     - search for contacts in the address book
     - add-note           - add note with author if he/she is in the contact book
     - show-notes         - show all notes with authors
     - exit               - enter 'exit' to exit the Assistant
@@ -615,22 +621,55 @@ class AddressBook(UserDict):
         with open(filename, "rb") as file:
             self.data = load(file)
 
+    
+    def search_contact(self):
+        # пошук контактів серед контактів книги
+        search_query = input("Enter search term: ")
+        results, suggestions = self.search(search_query)
+
+        if results:
+            print("Search results:")
+            for result in results:
+                print(result)
+        elif suggestions:
+            print(f"Possible suggestions: {', '.join(suggestions)}")
+        else:
+            print(f"Contact '{search_query}' not found. Phone number, address, and email were also not found.")
+
     def search(self, query):
-        # Пошук за кількома цифрами номера телефону або літерами імені 
         results = []
+        suggestions = []
+
         try:
             int(query[0])
-        except Exception:
+        except ValueError:
+            query_lower = query.lower()
             for name, record in self.data.items():
-                if query.lower() in name.lower():
+                # Пошук за ім'ям, адресою та електронною поштою
+                if (
+                    query_lower in name.lower()
+                    or (record.email and query_lower in record.email.value.lower())
+                    or (record.address and query_lower in record.address.value.lower())
+                ):
                     results.append(record)
+                elif name.lower().startswith(query_lower):
+                    # Додавання рекомендації, якщо збігається початок імені
+                    suggestions.append(name)
+            # Пошук за номером телефону
+            for record in self.data.values():
+                for phone in record.phones:
+                    if query_lower in phone.value.lower():
+                        results.append(record)
+
         else:
+            # Пошук за номером телефону
             for name, record in self.data.items():
                 for phone in record.phones:
                     if query.lower() in phone.value.lower():
                         results.append(record)
-        finally:        
-            return results
+
+        return results, suggestions
+
 
 class AddressBookIterator:
     def __init__(self, address_book, items_per_page):
