@@ -143,7 +143,8 @@ def fun_add_contact(address_book, name):
             phone = input(f'Enter the phone (10 digits) (c - close): ')
 
     # Користувачу пропонується ввести день народження для контакту
-    birthday = input(f'Enter the birthday of contact {name} (c - close): ')
+    birthday = input(
+        f'Enter the birthday of contact {name} (Year-month-day)(c - close): ')
 
     # Ввод дня народження для контакту, можливо введення 'c' для закриття
     while birthday != 'c':
