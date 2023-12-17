@@ -12,6 +12,8 @@ from prompt_toolkit.completion import WordCompleter
 from re import fullmatch
 from re import IGNORECASE
 
+# Регулярний вираз для перевірки email
+EMAIL_REGULAR = r"[a-z][a-z0-9_.]+[@][a-z.]+[.][a-z]{2,}"
 
 # Отримання поточного каталогу, в якому знаходиться виконуваний файл
 CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
@@ -23,7 +25,7 @@ FILENAME2 = path.join(CURRENT_DIRECTORY, 'notes.pkl')
             
 def main():
     # Завантаження адресної книги або створення нової
-    book = load_book(FILENAME)
+    book = load_book()
 
     print("Hi! I am Santa's Personal Assistant - Mr.Corgi. How can I help you?")
 
@@ -44,7 +46,7 @@ def main():
             # Вивід меню команд
             print_menu_commmands()
 
-        elif command == 'add-contact':
+        elif command[:11] == 'add-contact':
             words_commands = command.split() # розділення рядка на масив слів
             # Додавання контакту
             if len(words_commands) < 2:
@@ -55,9 +57,9 @@ def main():
 
         elif command == 'show-contacts':
             # Виведення всіх записів у книзі
-            print_table(book)
+            print_table(book, "Contact book")
         
-        elif command == 'edit-contact':
+        elif command[:12] == 'edit-contact':
             words_commands = command.split() # розділення рядка на масив слів
             # Редактування контакту
             if len(words_commands) < 2:
@@ -96,7 +98,7 @@ def main():
         save_book(book)
 
 
-def load_book(FILENAME):
+def load_book():
     # Завантаження адресної книги з файлу
     try:
         with open(FILENAME, 'rb') as file: 
@@ -114,15 +116,15 @@ def save_book(address_book):
 def print_menu_commmands():
     # Друк команд
     print('''All commands:
-    - add-contact        - add contact with it's name
-    - edit-contact       - editing contact information
-    - delete-contact     - deleting contact
-    - show-contacts      - displays all contacts in the address book
-    - upcoming-birthdays - display a list of contacts whose birthday is a specified number of days from the current date
-    - search-contact     - search for contacts in the address book
-    - add-note           - add note with author if he/she is in the contact book
-    - show-notes         - show all notes with authors
-    - exit               - enter 'exit' to exit the Assistant
+    - add-contact [name]  - add contact with it's name
+    - edit-contact [name] - editing contact information
+    - delete-contact      - deleting contact
+    - show-contacts       - displays all contacts in the address book
+    - upcoming-birthdays  - display a list of contacts whose birthday is a specified number of days from the current date
+    - search-contact      - search for contacts in the address book
+    - add-note            - add note with author if he/she is in the contact book
+    - show-notes          - show all notes with authors
+    - exit                - enter 'exit' to exit the Assistant
     ''')
 
 
@@ -234,7 +236,7 @@ def fun_delete_contact(address_book):
         print(f'contact with thw name {contact_name} not found.')
 
 
-def print_table(AddressBook):
+def print_table(AddressBook, text_title):
     # Виведення у вигляді таблиці
 
     # Перевірка на порожню книгу
@@ -246,7 +248,7 @@ def print_table(AddressBook):
     console = Console()
 
     # Створення таблиці
-    table = Table(title="Contact book", show_header=True, header_style="bold magenta")
+    table = Table(title = text_title, show_header=True, header_style="bold magenta")
     table.title_align = "center"
     table.title_style = "bold yellow"
 
@@ -284,11 +286,10 @@ def fun_upcoming_birthdays(address_book):
 
     upcoming_birthdays = get_upcoming_birthdays(address_book, days_count)
     if upcoming_birthdays:
-        print('*' * 10)
-        print(f'Upcoming birthdays within the next {days_count} days:')
+        new_book = AddressBook()
         for contact in upcoming_birthdays:
-            print(contact)
-            print('*' * 10)
+            new_book.add_record(contact)
+        print_table(new_book, f'Upcoming birthdays within the next {days_count} days')
     else:
         print(f'No upcoming birthdays within the next {days_count} days.')
 
@@ -411,7 +412,7 @@ class Email(Field):
 
     @staticmethod
     def is_valid_email(value):
-        return fullmatch(r"[a-z][a-z0-9_.]+[@][a-z]+[.][a-z]{2,}", value, flags = IGNORECASE) is not None
+        return fullmatch(EMAIL_REGULAR, value, flags = IGNORECASE) is not None
     
     # getter
     @property
@@ -588,12 +589,12 @@ class Record:
 
 
 class AddressBook(UserDict):
-    def add_record(self, record):
-        self.data[record.name.value] = record
-    
     def __init__(self):
         super().__init__()
         self.notes_manager = NoteManager()
+
+    def add_record(self, record):
+        self.data[record.name.value] = record
 
     def add_note(self, text):
         self.notes_manager.add_note(text)
@@ -610,18 +611,7 @@ class AddressBook(UserDict):
 
     def __iter__(self):
         return AddressBookIterator(self, items_per_page=5)  # items_per_page - кількість записів на сторінці
-    
-    def save_to_file(self, filename):
-        # Завантаження до файлу
-        with open(filename, "wb") as file:
-            dump(self.data, file)
 
-    def load_from_file(self, filename):
-        # Завантаження з файлу
-        with open(filename, "rb") as file:
-            self.data = load(file)
-
-    
     def search_contact(self):
         # пошук контактів серед контактів книги
         search_query = input("Enter search term: ")
