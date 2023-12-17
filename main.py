@@ -130,7 +130,7 @@ def fun_add_contact(address_book, name):
     address_book.add_record(record)
 
     # Користувачу пропонується ввести телефон для контакту
-    phone = input(f'Enter the phone of contact {name} (c - close): ')
+    phone = input(f'Enter the phone of contact {name} (10 digits)(c - close): ')
 
     # Ввод телефонів для контакту, можливо введення 'c' для закриття
     while phone != 'c':
