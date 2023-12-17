@@ -9,6 +9,9 @@ from rich.table import Table
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 
+from re import fullmatch
+from re import IGNORECASE
+
 
 # Отримання поточного каталогу, в якому знаходиться виконуваний файл
 CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
@@ -35,40 +38,46 @@ def main():
 
     # Цикл для команд в консолі 
     while command != 'exit':
-        words_commands = command.split() # розділення рядка на масив слів
 
         if command == 'help':
             # Вивід меню команд
             print_menu_commmands()
 
-        elif words_commands[0] == 'add-contact':
+        elif command == 'add-contact':
+            words_commands = command.split() # розділення рядка на масив слів
             # Додавання контакту
-            while len(words_commands) < 2:
-                command = input('Enter command "add-contact [name]": ')
-                words_commands = command.split()
-            fun_add_contact(book, words_commands[1])
+            if len(words_commands) < 2:
+                name_contact = input('Enter name of contact: ')
+            else:
+                name_contact = ' '.join(words_commands[1:])
+            fun_add_contact(book, name_contact)
 
-        elif words_commands[0] == 'show-contacts':
+        elif command == 'show-contacts':
             # Виведення всіх записів у книзі
             print_table(book)
         
-        elif words_commands[0] == 'edit-contact':
+        elif command == 'edit-contact':
+            words_commands = command.split() # розділення рядка на масив слів
             # Редактування контакту
-            fun_edit_contact(book)
+            if len(words_commands) < 2:
+                fun_edit_contact(book)
+            else:
+                name_contact = ' '.join(words_commands[1:])
+                fun_edit_contact(book, name_contact)
 
-        elif words_commands[0] == 'delete-contact':
+        elif command == 'delete-contact':
             # Видалення контакту
             fun_delete_contact(book)
 
-        elif words_commands[0] == 'upcoming-birthdays':
+        elif command == 'upcoming-birthdays':
             # Вивід контакту у якого через n днів день народження
             fun_upcoming_birthdays(book)
         
-        elif words_commands[0] == 'add-note':
+        elif command == 'add-note':
             # Додавання нотатки
             fun_add_note(book)
 
-        elif words_commands[0] == 'show-notes':
+        elif command == 'show-notes':
             # Вивід нотаток
             fun_show_notes(book, FILENAME2)
 
@@ -105,7 +114,8 @@ def print_menu_commmands():
     - delete-contact     - deleting contact
     - show-contacts      - displays all contacts in the address book
     - upcoming-birthdays - display a list of contacts whose birthday is a specified number of days from the current date
-    - add-note           - add note with author if he/she is in the contact book  
+    - add-note           - add note with author if he/she is in the contact book
+    - show-notes         - show all notes with authors
     - exit               - enter 'exit' to exit the Assistant
     ''')
 
@@ -166,28 +176,36 @@ def fun_add_contact(address_book, name):
         record.set_address(address)
 
 
-def fun_edit_contact(address_book):
-    contact_name = input('Write the name of contact in which you want to change something: ')
+def fun_edit_contact(address_book, contact_name = ""):
+    if not contact_name:
+        contact_name = input('Write the name of contact in which you want to change something: ')
     if contact_name in address_book.data:
         contact_edit = address_book.data[contact_name]
         print(f'Contact found')
         while True:
-            edit = input('Enter what you want to edit(phone, birthday, address, email) (c - close): ')
+            edit = input('Enter what you want to edit(p - phone, b - birthday, a - address, e - email) (c - close): ')
             if edit.lower() == 'c':
                 break 
             try:
-                if edit == 'phone':
+                if edit == 'p':
                     new_phone = input("Enter new phone number: ")
-                    contact_edit.edit_phone(contact_edit.phones[0].value, new_phone)
-                elif edit == 'birthday':
+                    if contact_edit.phones:
+                        contact_edit.edit_phone(contact_edit.phones[0].value, new_phone)
+                    else:
+                        contact_edit.add_phone(new_phone)
+                elif edit == 'b':
                     new_birthday = input('Enter new birthday: ')
                     contact_edit.set_birthday(new_birthday)
-                elif edit == 'address':
+                elif edit == 'a':
                     new_address = input('Enter new address: ')
                     contact_edit.set_address(new_address)
-                elif edit == 'email':
+                elif edit == 'e':
                     new_email = input('Enter new email: ')
-                    contact_edit.edit_email(new_email)
+                    if contact_edit.email:
+                        contact_edit.edit_email(new_email)
+                    else:
+                        contact_edit.add_email(new_email)
+
                 else:
                     print('Ivailid comand, please enter(phone, birthday, address, email) (c - close): ')
             except ValueError:
@@ -237,7 +255,7 @@ def print_table(AddressBook):
     for name, record in AddressBook.data.items():
         table.add_row(
             str(record.name.value),
-            "; ".join(str(phone.value) for phone in record.phones),
+            "; ".join(str(phone) for phone in record.phones),
             record.birthday.strftime('%Y-%m-%d') if record.birthday else "",
             str(record.address.value) if record.address else "",
             str(record.email.value) if record.email else "",
@@ -381,13 +399,13 @@ class Phone(Field):
     
 class Email(Field):
     def __init__(self, value):
-        if not self.is_vallid_email(value):
+        if not self.is_valid_email(value):
             raise ValueError('Invalid email format')
         super().__init__(value)
 
     @staticmethod
-    def is_vallid_email(value):
-        return '@' in value
+    def is_valid_email(value):
+        return fullmatch(r"[a-z][a-z0-9_.]+[@][a-z]+[.][a-z]{2,}", value, flags = IGNORECASE) is not None
     
     # getter
     @property
@@ -397,6 +415,8 @@ class Email(Field):
     # setter
     @value.setter
     def value(self, new_value):
+        if not self.is_valid_email(new_value):
+            raise ValueError('Invalid email format')
         self._value = new_value
 
     def __str__(self):
@@ -491,7 +511,7 @@ class Record:
         email = Email(email)
         self.email = email
             
-    def edit_phone(self, old_phone, new_phone):
+    def edit_phone(self, old_phone=None, new_phone=None):
         # Редагування телефону
         found = False
         for phone in self.phones:
@@ -504,7 +524,7 @@ class Record:
             raise ValueError(f"Phone {old_phone} not found in the record")
     
     def edit_email(self, new_email):
-        if not Email.is_vallid_email(new_email):
+        if not Email.is_valid_email(new_email):
             raise ValueError('Invalid email format')
         self.email.value = new_email
 
