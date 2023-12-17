@@ -114,7 +114,7 @@ def save_book(address_book):
 def print_menu_commmands():
     # Друк команд
     print('''All commands:
-    - add-contact [name] - add contact with it's name
+    - add-contact        - add contact with it's name
     - edit-contact       - editing contact information
     - delete-contact     - deleting contact
     - show-contacts      - displays all contacts in the address book
