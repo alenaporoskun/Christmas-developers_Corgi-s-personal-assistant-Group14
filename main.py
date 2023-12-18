@@ -31,7 +31,7 @@ def main():
     print("Hi! I am Mr.Corgi's Personal Assistant. How can I help you?")
 
     # Список доступних команд
-    commands = ['add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'upcoming-birthdays', 
+    commands = ['help', 'add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'delete-phone', 'upcoming-birthdays', 
                 'add-note', 'show-notes', 'search-contact', 'search-notes', 'exit']
 
     # Створення об'єкту WordCompleter, який використовується для автодоповнення команд
@@ -72,6 +72,10 @@ def main():
         elif command == 'delete-contact':
             # Видалення контакту
             fun_delete_contact(book)
+        
+        elif command == 'delete-phone':
+            # Видалення контакту
+            fun_delete_phone(book)
 
         elif command == 'upcoming-birthdays':
             # Вивід контакту у якого через n днів день народження
@@ -123,15 +127,16 @@ def print_menu_commmands():
     # Друк команд
     print('''All commands:
     - add-contact [name]  - add contact with it's name
-    - edit-contact [name] - editing contact information
-    - delete-contact      - deleting contact
-    - show-contacts       - displays all contacts in the address book
+    - edit-contact [name] - edit contact information
+    - delete-contact      - delete contact
+    - delete-phone        - delete phone from some contact
+    - show-contacts       - display all contacts in the address book
     - upcoming-birthdays  - display a list of contacts whose birthday is a specified number of days from the current date
     - search-contact      - search for contacts in the address book
     - add-note            - add note with author if he/she is in the contact book
     - show-notes          - show all notes with authors
     - search-notes        - search for a note by word or author
-    - exit                - enter 'exit' to exit the Assistant
+    - exit                - exit the Assistant
     ''')
 
 
@@ -276,7 +281,7 @@ def fun_edit_contact(address_book, contact_name = ""):
             else:
                 print('Invalid comand.')
     else:
-        print(f'Contact {contact_name} not found')
+        print(f'Contact {contact_name} not found.')
 
 
 def fun_delete_contact(address_book):
@@ -290,7 +295,31 @@ def fun_delete_contact(address_book):
         else:
             print('Deletion canceled')
     else:
-        print(f'contact with thw name {contact_name} not found.')
+        print(f'Contact with the name {contact_name} not found.')
+
+
+def fun_delete_phone(address_book):
+    # Видалення телефону якогось контакту
+    contact_name = input('Enter the name of contact: ')
+    if contact_name in address_book.data:
+        contact_edit = address_book.data[contact_name]
+        if len(contact_edit.phones) > 0:
+            while len(contact_edit.phones) > 0:
+                phones = []
+                for i in range(len(contact_edit.phones)):
+                    phones.append(contact_edit.phones[i].value)
+                del_phone = input('Enter phone number to delete (c - close): ')
+                if del_phone == 'c':
+                    break
+                if del_phone in phones:
+                    contact_edit.remove_phone(del_phone)
+                    print('Phone number deleted.')
+                else:
+                    print('Phone number not found.')
+        else:
+            print('There are no phone numbers to delete.')            
+    else:
+        print(f'Contact with the name {contact_name} not found.')
 
 
 def print_table(AddressBook, text_title):
