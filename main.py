@@ -618,9 +618,6 @@ class Address(Field):
         self._value = new_value
 
 class Notes:
-    # def __init__(self, text, author):
-    #     self.text = text
-    #     self.author = author
     def __init__(self, text, author, tags=None):
         self.text = text
         self.author = author
@@ -634,14 +631,10 @@ class NoteManager:
     def __init__(self):
         self.notes = []
 
-    # def add_note(self, author, text):
-    #     note = Notes(text, author)
-    #     self.notes.append(note)
     def add_note_with_tags(self, author, text, tags):
         note = Notes(text, author, tags)
         self.notes.append(note)
 
-    # 
     def print_notes(self):
         if self.notes:
             console = Console()
