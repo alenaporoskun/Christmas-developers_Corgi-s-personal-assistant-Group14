@@ -21,13 +21,14 @@ CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
 # Створення повного шляху до файлу "address_book.pkl" в поточному каталозі
 FILENAME = path.join(CURRENT_DIRECTORY, 'address_book.pkl')
 
+# Створення повного шляху до файлу "notes.pkl" в поточному каталозі
 FILENAME2 = path.join(CURRENT_DIRECTORY, 'notes.pkl')
             
 def main():
     # Завантаження адресної книги або створення нової
     book = load_book()
 
-    print("Hi! I am Santa's Personal Assistant - Mr.Corgi. How can I help you?")
+    print("Hi! I am Mr.Corgi's Personal Assistant. How can I help you?")
 
     # Список доступних команд
     commands = ['add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'upcoming-birthdays', 
@@ -147,10 +148,15 @@ def fun_add_contact(address_book, name):
     phone = input(f'Enter the phone of contact {name} (c - close): ')
 
     # Ввод телефонів для контакту, можливо введення 'c' для закриття
+    phones = []
     while phone != 'c':
         try:
             # Додає телефон до запису контакту
-            record.add_phone(phone)
+            if not phone in phones:
+                record.add_phone(phone)
+                phones.append(phone)
+            else:
+                print('The phone is already in the phone list.')
             phone = input(f'Enter the phone of contact {name} (c - close): ')
         except ValueError:
             # Обробка виключення, якщо введено некоректний телефон
@@ -180,7 +186,7 @@ def fun_add_contact(address_book, name):
             break
         except ValueError:
             # Обробка виключення, якщо введено некоректний формат електронної пошти
-            email = input('Enter a valid email format (c - close): ')
+            email = input('Enter a valid email (c - close): ')
 
     # Користувачу пропонується ввести адресу для контакту
     address = input(f'Enter the address of contact {name} (c - close): ')
@@ -200,30 +206,69 @@ def fun_edit_contact(address_book, contact_name = ""):
             edit = input('Enter what you want to edit(p - phone, b - birthday, a - address, e - email) (c - close): ')
             if edit.lower() == 'c':
                 break 
-            try:
-                if edit == 'p':
-                    new_phone = input("Enter new phone number: ")
-                    if contact_edit.phones:
-                        contact_edit.edit_phone(contact_edit.phones[0].value, new_phone)
-                    else:
-                        contact_edit.add_phone(new_phone)
-                elif edit == 'b':
-                    new_birthday = input('Enter new birthday: ')
-                    contact_edit.set_birthday(new_birthday)
-                elif edit == 'a':
-                    new_address = input('Enter new address: ')
+            if edit == 'p':
+                new_phone = input("Enter new phone number (c - close): ")
+                while new_phone != 'c':
+                    try:
+                        len_phones = len(contact_edit.phones)
+                        if  len_phones == 0:
+                            contact_edit.add_phone(new_phone)
+                        elif len_phones == 1:
+                            while True:
+                                choice = input(f'Enter what you want (c - correct phone {contact_edit.phones[0].value}, a - add a new phone): ')
+                                if choice == 'c':
+                                    contact_edit.edit_phone(contact_edit.phones[0].value, new_phone)
+                                    break
+                                elif choice == 'a':
+                                    contact_edit.add_phone(new_phone)
+                                    break
+                        else:
+                            question_text = 'What phone number will we correct: '
+                            for i in range(len_phones):
+                                question_text += str(i + 1) + ' - ' + contact_edit.phones[i].value + ', '
+                            question_text += str(len_phones + 1) + ' - add a new phone: '
+                            while True:
+                                number = input(question_text)
+                                if number.isdigit():
+                                    number = int(number)
+                                    if number > 0 and number < len_phones + 2:
+                                        break
+                                    else:
+                                        print('Incorrect number.')
+                                else:
+                                    print('Only numbers are required.')
+                            if number > 0 and number <= len_phones:
+                                contact_edit.edit_phone(contact_edit.phones[number - 1].value, new_phone)
+                            else:
+                                contact_edit.add_phone(new_phone)
+                        new_phone = input("Enter new phone number (c - close): ")
+                    except ValueError:
+                        new_phone = input('Enter the valid phone (10 digits) (c - close): ')
+            elif edit == 'b':
+                new_birthday = input('Enter new birthday (c - close): ')
+                while new_birthday != 'c':
+                    try:
+                        contact_edit.set_birthday(new_birthday)
+                        break
+                    except ValueError:
+                        new_birthday = input('Enter the birthday (Year-month-day) (c - close): ')
+            elif edit == 'a':
+                new_address = input('Enter new address (c - close): ')
+                if new_address != 'c':
                     contact_edit.set_address(new_address)
-                elif edit == 'e':
-                    new_email = input('Enter new email: ')
-                    if contact_edit.email:
-                        contact_edit.edit_email(new_email)
-                    else:
-                        contact_edit.add_email(new_email)
-
-                else:
-                    print('Ivailid comand, please enter(phone, birthday, address, email) (c - close): ')
-            except ValueError:
-                edit = input('Ivailid comand, please enter(phone, birthday, address, email) (c - close): ')
+            elif edit == 'e':
+                new_email = input('Enter new email (c - close): ')
+                while new_email != 'c':
+                    try:
+                        if contact_edit.email:
+                            contact_edit.edit_email(new_email)
+                        else:
+                            contact_edit.add_email(new_email)
+                        break
+                    except ValueError:
+                        new_email = input('Enter a valid email (c - close): ')
+            else:
+                print('Invalid comand.')
     else:
         print(f'Contact {contact_name} not found')
 
@@ -247,7 +292,7 @@ def print_table(AddressBook, text_title):
 
     # Перевірка на порожню книгу
     if not AddressBook.data:
-        print("\nThe contact book is empty.\n")
+        print("\n  The contact book is empty.\n")
         return 
 
     # Створення об'єкту Console
@@ -653,9 +698,10 @@ class AddressBook(UserDict):
         results, suggestions = self.search(search_query)
 
         if results:
-            print("Search results:")
-            for result in results:
-                print(result)
+            new_book = AddressBook()
+            for record in set(results):
+                new_book.add_record(record)
+            print_table(new_book, "Search results")
         elif suggestions:
             print(f"Possible suggestions: {', '.join(suggestions)}")
         else:
