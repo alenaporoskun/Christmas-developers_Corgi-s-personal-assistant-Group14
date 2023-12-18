@@ -31,7 +31,7 @@ def main():
     print("Hi! I am Mr.Corgi's Personal Assistant. How can I help you?")
 
     # Список доступних команд
-    commands = ['add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'delete-phone', 'upcoming-birthdays', 
+    commands = ['help', 'add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'delete-phone', 'upcoming-birthdays', 
                 'add-note', 'show-notes', 'search-contact', 'search-notes', 'exit']
 
     # Створення об'єкту WordCompleter, який використовується для автодоповнення команд
@@ -127,15 +127,16 @@ def print_menu_commmands():
     # Друк команд
     print('''All commands:
     - add-contact [name]  - add contact with it's name
-    - edit-contact [name] - editing contact information
-    - delete-contact      - deleting contact
-    - show-contacts       - displays all contacts in the address book
+    - edit-contact [name] - edit contact information
+    - delete-contact      - delete contact
+    - delete-phone        - delete phone from some contact
+    - show-contacts       - display all contacts in the address book
     - upcoming-birthdays  - display a list of contacts whose birthday is a specified number of days from the current date
     - search-contact      - search for contacts in the address book
     - add-note            - add note with author if he/she is in the contact book
     - show-notes          - show all notes with authors
     - search-notes        - search for a note by word or author
-    - exit                - enter 'exit' to exit the Assistant
+    - exit                - exit the Assistant
     ''')
 
 
