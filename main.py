@@ -30,8 +30,8 @@ def main():
     print("Hi! I am Santa's Personal Assistant - Mr.Corgi. How can I help you?")
 
     # Список доступних команд
-    commands = ['add-contact', 'show-contacts', 'edit-contact', 'delete-contact',
-                'upcoming-birthdays', 'add-note', 'show-notes', 'search-contact', 'exit']
+    commands = ['add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'upcoming-birthdays', 
+                'add-note', 'show-notes', 'search-contact', 'search-notes', 'exit']
 
     # Створення об'єкту WordCompleter, який використовується для автодоповнення команд
     completer = WordCompleter(commands, ignore_case=True)
@@ -88,6 +88,11 @@ def main():
             # Пошук контактів серед контактів книги
             book.search_contact()
 
+        elif command == 'search-notes':
+            # Пошук нотатки серед нотаток книги
+            fun_search_notes(book, FILENAME2)
+
+
         else: 
             print("The command was not found. Please enter another command.")
 
@@ -124,6 +129,7 @@ def print_menu_commmands():
     - search-contact      - search for contacts in the address book
     - add-note            - add note with author if he/she is in the contact book
     - show-notes          - show all notes with authors
+    - search-notes        - search for a note by word or author
     - exit                - enter 'exit' to exit the Assistant
     ''')
 
@@ -358,6 +364,35 @@ def fun_show_notes(address_book, filename):
     # Виводить всі нотатки за допомогою методу print_notes
     address_book.notes_manager.print_notes()
 
+def fun_search_notes(address_book, filename):
+    # Пошук нотатки за словами або автором
+    search_term = input(
+        'Enter search term (leave blank to show all notes): ').lower()
+
+    # Завантаження нотатки з файлу в об'єкт notes_manager
+    address_book.notes_manager.load_notes(filename)
+
+    # Фільтрування нотаток за словом або автором
+    filtered_notes = [note for note in address_book.notes_manager.notes if search_term in note.text.lower() 
+                      or search_term in note.author.lower()]
+
+    # Виведення знайдених нотаток
+    if filtered_notes:
+        console = Console()
+        table = Table(title='Notes', show_header=True,
+                      header_style='bold magenta')
+        table.title_align = 'center'
+        table.title_style = 'bold yellow'
+        table.add_column('Index', style='cyan', width=5, justify='center')
+        table.add_column('Note', style='green')
+        table.add_column('Author', style='blue')
+
+        for i, note in enumerate(filtered_notes, start=1):
+            table.add_row(str(i), note.text, note.author)
+
+        console.print(table)
+    else:
+        print(f"No notes found for the search term '{search_term}'.")
 
 class Field:
     def __init__(self, value):
