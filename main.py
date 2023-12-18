@@ -138,6 +138,10 @@ def print_menu_commmands():
 def fun_add_contact(address_book, name):
     # Функція для додавання контакту в адресну книгу
 
+    if name in address_book.data:
+        print('Such a contact already exists.')
+        return
+
     # Створюється новий запис (контакт) з ім'ям name
     record = Record(name)
 
