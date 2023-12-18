@@ -143,7 +143,7 @@ def print_menu_commmands():
     - add-note            - add note with author if he/she is in the contact book
     - show-notes          - show all notes with authors
     - search-notes        - search for a note by word or author
-    - edit-note           - edit note
+    - edit-note           - editing a note
     - delete-note         - delete note
     - exit                - exit the Assistant
     ''')
@@ -420,27 +420,32 @@ def get_upcoming_birthdays(address_book, days_count):
 
 
 def fun_add_note(address_book):
-    # Функція для додавання нотаток в адресну книгу
-
+    # Додавання нотатки
     author = input('Enter an author of note (c - close): ')
+
+    # Перевірка, чи користувач вибрав опцію закриття
+    if author.lower() == 'c':
+        return
+
+    # Перевірка, чи автор існує в телефонній книзі
     if author not in address_book.data:
         print('The author is not found in the contact book.')
         return
 
-    # Користувачу пропонується ввести текст нотатки (до тих пір, поки не введе 'c' або 'C' для закриття)
-    note_text = input('Enter your note (c - close): ')
+    # Введення тексту нотатки та тегів
+    while True:
+        note_text = input('Enter your note (c - close): ')
+        if note_text.lower() == 'c':
+            break
 
-    while note_text.lower() != 'c':
-        # Додає нотатку до об'єкту notes_manager в адресній книзі
-        address_book.notes_manager.add_note(author, note_text)
-
-        # Виводить повідомлення про успішне додавання нотатки
+        tags_input = input('Enter tags (comma-separated): ')
+        tags = [tag.strip() for tag in tags_input.split(',')]
+        
+        # Додавання нотатки та тегів до менеджера нотаток
+        address_book.notes_manager.add_note_with_tags(author, note_text, tags)
         print('Note added successfully!')
 
-         # Знову запитує користувача ввести нотатку або закрити введення
-        note_text = input('Enter your note (c - close): ')
-
-    # Після закриття введення зберігає всі нотатки в файл з ім'ям FILENAME2
+    # Збереження нотаток у файл
     address_book.notes_manager.save_notes(FILENAME2)
 
 
@@ -484,12 +489,10 @@ def fun_search_notes(address_book, filename):
         print(f"No notes found for the search term '{search_term}'.")
 
 def fun_edit_note(address_book):
-    # Редагування нотатки
     if isinstance(address_book, AddressBook):
         address_book.notes_manager.load_notes(FILENAME2)
         address_book.notes_manager.print_notes()
         index_to_edit = int(input('Enter the index of the note to edit (0 - cancel): '))
-
     if index_to_edit == 0:
         return  # Редагування скасовано
     
@@ -498,12 +501,12 @@ def fun_edit_note(address_book):
         new_text = input('Enter the new text for the note: ')
         address_book.notes_manager.edit_note(index_to_edit, new_text)
         address_book.notes_manager.save_notes(FILENAME2)
+        # print('Note edited successfully!')
 
     else:
         print("Invalid note index.")
     
 def fun_delete_note(address_book):
-    # Видалення нотатки
     address_book.notes_manager.load_notes(FILENAME2)
     address_book.notes_manager.print_notes()
     index_to_delete = int(input('Enter the index of the note to delete (0 - cancel): '))
@@ -615,21 +618,30 @@ class Address(Field):
         self._value = new_value
 
 class Notes:
-    def __init__(self, text, author):
+    # def __init__(self, text, author):
+    #     self.text = text
+    #     self.author = author
+    def __init__(self, text, author, tags=None):
         self.text = text
         self.author = author
+        self.tags = tags if tags is not None else []
 
     def __str__(self):
-        return f"{self.text} (by {self.author})"
+        tags_str = ', '.join(self.tags) if hasattr(self, 'tags') else ''
+        return f"{self.text} (by {self.author}, Tags: {tags_str})"
     
 class NoteManager:
     def __init__(self):
         self.notes = []
 
-    def add_note(self, author, text):
-        note = Notes(text, author)
+    # def add_note(self, author, text):
+    #     note = Notes(text, author)
+    #     self.notes.append(note)
+    def add_note_with_tags(self, author, text, tags):
+        note = Notes(text, author, tags)
         self.notes.append(note)
 
+    # 
     def print_notes(self):
         if self.notes:
             console = Console()
@@ -638,10 +650,13 @@ class NoteManager:
             table.title_style = "bold yellow"
             table.add_column("Index", style="cyan", width=5, justify="center")
             table.add_column("Note", style="green")
-            table.add_column("Author", style="blue")  # Додано новий стовпець для автора
+            table.add_column("Author", style="blue")
+            table.add_column("Tags", style="magenta")  # Додавання стовпця для тегів
 
             for i, note in enumerate(self.notes, start=1):
-                table.add_row(str(i), note.text, note.author)
+                # Перевірка, чи note має атрибут tags перед його використанням
+                tags_str = ', '.join(note.tags) if hasattr(note, 'tags') else ''
+                table.add_row(str(i), note.text, note.author, tags_str)
 
             console.print(table)
         else:
