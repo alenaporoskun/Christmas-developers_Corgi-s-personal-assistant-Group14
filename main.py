@@ -31,7 +31,7 @@ def main():
     print("Hi! I am Mr.Corgi's Personal Assistant. How can I help you?")
 
     # Список доступних команд
-    commands = ['add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'upcoming-birthdays', 
+    commands = ['add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'delete-phone', 'upcoming-birthdays', 
                 'add-note', 'show-notes', 'search-contact', 'search-notes', 'exit']
 
     # Створення об'єкту WordCompleter, який використовується для автодоповнення команд
@@ -72,6 +72,10 @@ def main():
         elif command == 'delete-contact':
             # Видалення контакту
             fun_delete_contact(book)
+        
+        elif command == 'delete-phone':
+            # Видалення контакту
+            fun_delete_phone(book)
 
         elif command == 'upcoming-birthdays':
             # Вивід контакту у якого через n днів день народження
@@ -276,7 +280,7 @@ def fun_edit_contact(address_book, contact_name = ""):
             else:
                 print('Invalid comand.')
     else:
-        print(f'Contact {contact_name} not found')
+        print(f'Contact {contact_name} not found.')
 
 
 def fun_delete_contact(address_book):
@@ -290,7 +294,31 @@ def fun_delete_contact(address_book):
         else:
             print('Deletion canceled')
     else:
-        print(f'contact with thw name {contact_name} not found.')
+        print(f'Contact with the name {contact_name} not found.')
+
+
+def fun_delete_phone(address_book):
+    # Видалення телефону якогось контакту
+    contact_name = input('Enter the name of contact: ')
+    if contact_name in address_book.data:
+        contact_edit = address_book.data[contact_name]
+        if len(contact_edit.phones) > 0:
+            while len(contact_edit.phones) > 0:
+                phones = []
+                for i in range(len(contact_edit.phones)):
+                    phones.append(contact_edit.phones[i].value)
+                del_phone = input('Enter phone number to delete (c - close): ')
+                if del_phone == 'c':
+                    break
+                if del_phone in phones:
+                    contact_edit.remove_phone(del_phone)
+                    print('Phone number deleted.')
+                else:
+                    print('Phone number not found.')
+        else:
+            print('There are no phone numbers to delete.')            
+    else:
+        print(f'Contact with the name {contact_name} not found.')
 
 
 def print_table(AddressBook, text_title):
