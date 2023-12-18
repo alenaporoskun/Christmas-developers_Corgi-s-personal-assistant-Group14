@@ -419,35 +419,20 @@ def get_upcoming_birthdays(address_book, days_count):
     return upcoming_birthdays                                                                          
 
 
-# def fun_add_note(address_book):
-#     # Функція для додавання нотаток в адресну книгу
-
-#     author = input('Enter an author of note (c - close): ')
-#     if author not in address_book.data:
-#         print('The author is not found in the contact book.')
-#         return
-
-#     # Користувачу пропонується ввести текст нотатки (до тих пір, поки не введе 'c' або 'C' для закриття)
-#     note_text = input('Enter your note (c - close): ')
-
-#     while note_text.lower() != 'c':
-#         # Додає нотатку до об'єкту notes_manager в адресній книзі
-#         address_book.notes_manager.add_note(author, note_text)
-
-#         # Виводить повідомлення про успішне додавання нотатки
-#         print('Note added successfully!')
-
-#          # Знову запитує користувача ввести нотатку або закрити введення
-#         note_text = input('Enter your note (c - close): ')
-
-#     # Після закриття введення зберігає всі нотатки в файл з ім'ям FILENAME2
-#     address_book.notes_manager.save_notes(FILENAME2)
 def fun_add_note(address_book):
+    # Додавання нотатки
     author = input('Enter an author of note (c - close): ')
+
+    # Перевірка, чи користувач вибрав опцію закриття
+    if author.lower() == 'c':
+        return
+
+    # Перевірка, чи автор існує в телефонній книзі
     if author not in address_book.data:
         print('The author is not found in the contact book.')
         return
 
+    # Введення тексту нотатки та тегів
     while True:
         note_text = input('Enter your note (c - close): ')
         if note_text.lower() == 'c':
@@ -456,9 +441,11 @@ def fun_add_note(address_book):
         tags_input = input('Enter tags (comma-separated): ')
         tags = [tag.strip() for tag in tags_input.split(',')]
         
+        # Додавання нотатки та тегів до менеджера нотаток
         address_book.notes_manager.add_note_with_tags(author, note_text, tags)
         print('Note added successfully!')
 
+    # Збереження нотаток у файл
     address_book.notes_manager.save_notes(FILENAME2)
 
 
