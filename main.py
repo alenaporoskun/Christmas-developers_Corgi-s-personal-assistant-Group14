@@ -143,7 +143,7 @@ def print_menu_commmands():
     - add-note            - add note with author if he/she is in the contact book
     - show-notes          - show all notes with authors
     - search-notes        - search for a note by word or author
-    - edit-note           - editing a note
+    - edit-note           - edit note
     - delete-note         - delete note
     - exit                - exit the Assistant
     ''')
@@ -484,10 +484,12 @@ def fun_search_notes(address_book, filename):
         print(f"No notes found for the search term '{search_term}'.")
 
 def fun_edit_note(address_book):
+    # Редагування нотатки
     if isinstance(address_book, AddressBook):
         address_book.notes_manager.load_notes(FILENAME2)
         address_book.notes_manager.print_notes()
         index_to_edit = int(input('Enter the index of the note to edit (0 - cancel): '))
+
     if index_to_edit == 0:
         return  # Редагування скасовано
     
@@ -496,12 +498,12 @@ def fun_edit_note(address_book):
         new_text = input('Enter the new text for the note: ')
         address_book.notes_manager.edit_note(index_to_edit, new_text)
         address_book.notes_manager.save_notes(FILENAME2)
-        # print('Note edited successfully!')
 
     else:
         print("Invalid note index.")
     
 def fun_delete_note(address_book):
+    # Видалення нотатки
     address_book.notes_manager.load_notes(FILENAME2)
     address_book.notes_manager.print_notes()
     index_to_delete = int(input('Enter the index of the note to delete (0 - cancel): '))
