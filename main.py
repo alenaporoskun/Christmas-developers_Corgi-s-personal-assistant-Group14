@@ -32,7 +32,7 @@ def main():
 
     # Список доступних команд
     commands = ['help', 'add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'delete-phone', 'upcoming-birthdays', 
-                'add-note', 'show-notes', 'search-contact', 'search-notes', 'exit']
+                'add-note', 'show-notes', 'search-contact', 'search-notes', 'edit-note', 'delete-note', 'exit']
 
     # Створення об'єкту WordCompleter, який використовується для автодоповнення команд
     completer = WordCompleter(commands, ignore_case=True)
@@ -97,6 +97,13 @@ def main():
             # Пошук нотатки серед нотаток книги
             fun_search_notes(book, FILENAME2)
 
+        elif command == 'edit-note':
+            # Редагування нотатки
+            fun_edit_note(book)
+
+        elif command == 'delete-note':
+            # Відалення нотатки
+            fun_delete_note(book)
 
         else: 
             print("The command was not found. Please enter another command.")
@@ -136,6 +143,8 @@ def print_menu_commmands():
     - add-note            - add note with author if he/she is in the contact book
     - show-notes          - show all notes with authors
     - search-notes        - search for a note by word or author
+    - edit-note           - edit note
+    - delete-note         - delete note
     - exit                - exit the Assistant
     ''')
 
@@ -474,6 +483,39 @@ def fun_search_notes(address_book, filename):
     else:
         print(f"No notes found for the search term '{search_term}'.")
 
+def fun_edit_note(address_book):
+    # Редагування нотатки
+    if isinstance(address_book, AddressBook):
+        address_book.notes_manager.load_notes(FILENAME2)
+        address_book.notes_manager.print_notes()
+        index_to_edit = int(input('Enter the index of the note to edit (0 - cancel): '))
+
+    if index_to_edit == 0:
+        return  # Редагування скасовано
+    
+    if 1 <= index_to_edit <= len(address_book.notes_manager.notes):
+        print(f"Editing Note {index_to_edit}: {address_book.notes_manager.notes[index_to_edit - 1]}")
+        new_text = input('Enter the new text for the note: ')
+        address_book.notes_manager.edit_note(index_to_edit, new_text)
+        address_book.notes_manager.save_notes(FILENAME2)
+
+    else:
+        print("Invalid note index.")
+    
+def fun_delete_note(address_book):
+    # Видалення нотатки
+    address_book.notes_manager.load_notes(FILENAME2)
+    address_book.notes_manager.print_notes()
+    index_to_delete = int(input('Enter the index of the note to delete (0 - cancel): '))
+
+    if index_to_delete == 0:
+        return  # Скасувати видалення
+    
+    address_book.notes_manager.delete_note(index_to_delete)
+    address_book.notes_manager.save_notes(FILENAME2)
+    print('Note deleted successfully!')
+
+
 class Field:
     def __init__(self, value):
         self.value = value
@@ -615,6 +657,20 @@ class NoteManager:
                 self.notes = load(file)
         except FileNotFoundError:
             self.notes = []
+
+    def edit_note(self, index, new_text):
+        if 1 <= index <= len(self.notes):
+            self.notes[index - 1].text = new_text
+            print(f"Note {index} edited successfully.")
+        else:
+            print("Invalid note index.")
+
+    def delete_note(self, index):
+        if 1 <= index <= len(self.notes):
+            deleted_note = self.notes.pop(index - 1)
+            print(f"Note {index} deleted: {deleted_note}")
+        else:
+            print("Invalid note index.")
 
 class Record:
     def __init__(self, name):
