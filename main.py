@@ -138,6 +138,10 @@ def print_menu_commmands():
 def fun_add_contact(address_book, name):
     # Функція для додавання контакту в адресну книгу
 
+    if name in address_book.data:
+        print('Such a contact already exists.')
+        return
+
     # Створюється новий запис (контакт) з ім'ям name
     record = Record(name)
 
@@ -210,6 +214,8 @@ def fun_edit_contact(address_book, contact_name = ""):
                 new_phone = input("Enter new phone number (c - close): ")
                 while new_phone != 'c':
                     try:
+                        if not (len(new_phone) == 10 and new_phone.isdigit()):
+                            raise ValueError
                         len_phones = len(contact_edit.phones)
                         if  len_phones == 0:
                             contact_edit.add_phone(new_phone)
