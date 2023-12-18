@@ -247,7 +247,7 @@ def print_table(AddressBook, text_title):
 
     # Перевірка на порожню книгу
     if not AddressBook.data:
-        print("\n Книга порожня.\n")
+        print("\nThe contact book is empty.\n")
         return 
 
     # Створення об'єкту Console
