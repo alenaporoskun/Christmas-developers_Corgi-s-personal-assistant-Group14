@@ -141,7 +141,7 @@ def print_menu_commmands():
     - upcoming-birthdays  - display a list of contacts whose birthday is a specified number of days from the current date
     - search-contact      - search for contacts in the address book
     - add-note            - add note with author if he/she is in the contact book
-    - show-notes          - show all notes with authors
+    - show-notes          - show all notes with authors and tags
     - search-notes        - search for a note by word or author
     - edit-note           - editing a note
     - delete-note         - delete note
@@ -336,7 +336,7 @@ def print_table(AddressBook, text_title):
 
     # Перевірка на порожню книгу
     if not AddressBook.data:
-        print("\n  The contact book is empty.\n")
+        print("The contact book is empty.")
         return 
 
     # Створення об'єкту Console
