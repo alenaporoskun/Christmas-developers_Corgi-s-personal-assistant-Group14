@@ -210,6 +210,8 @@ def fun_edit_contact(address_book, contact_name = ""):
                 new_phone = input("Enter new phone number (c - close): ")
                 while new_phone != 'c':
                     try:
+                        if not (len(new_phone) == 10 and new_phone.isdigit()):
+                            raise ValueError
                         len_phones = len(contact_edit.phones)
                         if  len_phones == 0:
                             contact_edit.add_phone(new_phone)
