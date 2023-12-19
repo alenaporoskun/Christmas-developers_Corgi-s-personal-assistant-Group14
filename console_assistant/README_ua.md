@@ -13,6 +13,8 @@
 
 │    │   ├── main.py   
 
+│    │   ├── file_sorter.py   
+
 │    │   └── __init__.py   
 
 │    └── setup.py   
@@ -55,4 +57,5 @@ console-assistant
 - search-notes             - пошук нотатки за словом або автором
 - edit-note                - редагувати нотатку 
 - delete-note              - видалити нотатку
-- exit                    - вийти з Помічника
+- sort-files               - сортує файли у папці по папкам 
+- exit                     - вийти з Помічника
