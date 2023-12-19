@@ -13,6 +13,13 @@ from prompt_toolkit.completion import WordCompleter
 from re import fullmatch
 from re import IGNORECASE
 
+# Спробуємо імпортувати модуль sorter з пакету file_sorter.
+# Якщо модуль не знайдено (ModuleNotFoundError), то спробуємо імпортувати його з іншого шляху.     
+try:
+    from console_assistant.file_sorter import sorter
+except ModuleNotFoundError: 
+    from file_sorter import sorter
+
 # Регулярний вираз для перевірки email
 EMAIL_REGULAR = r"[a-z][a-z0-9_.]+[@][a-z.]+[.][a-z]{2,}"
 
@@ -24,9 +31,9 @@ FILENAME = path.join(CURRENT_DIRECTORY, 'data', 'address_book.pkl')
 
 # Побудуємо абсолютний шлях до файлу notes.pkl у підкаталозі 'data'
 FILENAME2 = path.join(CURRENT_DIRECTORY, 'data', 'notes.pkl')
-            
+
 def main():
-    # Спробувати створити папку 'data'
+    # Створення папки 'data'
     data_folder_path = path.join(CURRENT_DIRECTORY, 'data')
     makedirs(data_folder_path, exist_ok=True)
 
@@ -37,7 +44,7 @@ def main():
 
     # Список доступних команд
     commands = ['help', 'add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'delete-phone', 'upcoming-birthdays', 
-                'add-note', 'show-notes', 'search-contact', 'search-notes', 'edit-note', 'delete-note', 'exit']
+                'add-note', 'show-notes', 'search-contact', 'search-notes', 'edit-note', 'delete-note', 'sort-files', 'exit']
 
     # Створення об'єкту WordCompleter, який використовується для автодоповнення команд
     completer = WordCompleter(commands, ignore_case=True)
@@ -110,6 +117,10 @@ def main():
             # Відалення нотатки
             fun_delete_note(book)
 
+        elif command == 'sort-files':
+            # Сортування файлів по папкам 
+            fun_sort_files()
+
         else: 
             print("The command was not found. Please enter another command.")
 
@@ -128,7 +139,7 @@ def load_book():
     except FileNotFoundError:
         return AddressBook()
     except Exception as e:
-        print(f'EXCEPION: {e}')
+        print("EXCEPTION\n", e)
         return AddressBook()
 
 def save_book(address_book):
@@ -145,13 +156,14 @@ def print_menu_commmands():
     - delete-contact      - delete contact
     - delete-phone        - delete phone from some contact
     - show-contacts       - display all contacts in the address book
-    - upcoming-birthdays  - display a list of contacts whose birthday is a specified number of days from the current date
     - search-contact      - search for contacts in the address book
+    - upcoming-birthdays  - display a list of contacts whose birthday is a specified number of days from the current date
     - add-note            - add note with author if he/she is in the contact book
     - show-notes          - show all notes with authors and tags
     - search-notes        - search for a note by word or author
     - edit-note           - editing a note
     - delete-note         - delete note
+    - sort-files          - sort files in a directory
     - exit                - exit the Assistant
     ''')
 
@@ -553,6 +565,15 @@ def fun_delete_note(address_book):
     address_book.notes_manager.save_notes(FILENAME2)
     print('Note deleted successfully!')
 
+
+def fun_sort_files():
+    # за замовчування папка - example ,
+    # щоб не сортувавало поточну папку при пустому параметрі
+    folder = ''
+    while folder != 'c':
+        folder = input('Enter the directory to sort (c - cancel): ').strip()
+        if folder and folder != 'c':
+            sorter(folder)
 
 class Field:
     def __init__(self, value):
