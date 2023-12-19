@@ -16,16 +16,15 @@ from re import IGNORECASE
 # Регулярний вираз для перевірки email
 EMAIL_REGULAR = r"[a-z][a-z0-9_.]+[@][a-z.]+[.][a-z]{2,}"
 
-# Отримати поточну робочу директорію
-CURRENT_DIRECTORY = getcwd()
+# Отримуємо повний шлях до поточного робочого каталогу, де розташований цей скрипт
+CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
 
-# Побудувати абсолютний шлях до файлу address_book.pkl у підкаталозі 'data'
+# Побудуємо абсолютний шлях до файлу address_book.pkl у підкаталозі 'data'
 FILENAME = path.join(CURRENT_DIRECTORY, 'data', 'address_book.pkl')
 
-# Побудувати абсолютний шлях до файлу notes.pkl у підкаталозі 'data'
+# Побудуємо абсолютний шлях до файлу notes.pkl у підкаталозі 'data'
 FILENAME2 = path.join(CURRENT_DIRECTORY, 'data', 'notes.pkl')
-
-
+            
 def main():
     # Спробувати створити папку 'data'
     data_folder_path = path.join(CURRENT_DIRECTORY, 'data')
@@ -37,17 +36,16 @@ def main():
     print("Hi! I am Mr.Corgi's Personal Assistant. How can I help you?")
 
     # Список доступних команд
-    commands = ['help', 'add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'delete-phone', 'upcoming-birthdays',
+    commands = ['help', 'add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'delete-phone', 'upcoming-birthdays', 
                 'add-note', 'show-notes', 'search-contact', 'search-notes', 'edit-note', 'delete-note', 'exit']
 
     # Створення об'єкту WordCompleter, який використовується для автодоповнення команд
     completer = WordCompleter(commands, ignore_case=True)
 
     # Запит на введення команди від користувача з можливістю автодоповнення
-    command = prompt('Write a command (help - all commands): ',
-                     completer=completer)
+    command = prompt('Write a command (help - all commands): ', completer=completer)
 
-    # Цикл для команд в консолі
+    # Цикл для команд в консолі 
     while command != 'exit':
 
         if command == 'help':
@@ -55,7 +53,7 @@ def main():
             print_menu_commmands()
 
         elif command[:11] == 'add-contact':
-            words_commands = command.split()  # розділення рядка на масив слів
+            words_commands = command.split() # розділення рядка на масив слів
             # Додавання контакту
             if len(words_commands) < 2:
                 name_contact = input('Enter name of contact: ')
@@ -66,9 +64,9 @@ def main():
         elif command == 'show-contacts':
             # Виведення всіх записів у книзі
             print_table(book, "Contact book")
-
+        
         elif command[:12] == 'edit-contact':
-            words_commands = command.split()  # розділення рядка на масив слів
+            words_commands = command.split() # розділення рядка на масив слів
             # Редактування контакту
             if len(words_commands) < 2:
                 fun_edit_contact(book)
@@ -79,7 +77,7 @@ def main():
         elif command == 'delete-contact':
             # Видалення контакту
             fun_delete_contact(book)
-
+        
         elif command == 'delete-phone':
             # Видалення контакту
             fun_delete_phone(book)
@@ -87,7 +85,7 @@ def main():
         elif command == 'upcoming-birthdays':
             # Вивід контакту у якого через n днів день народження
             fun_upcoming_birthdays(book)
-
+        
         elif command == 'add-note':
             # Додавання нотатки
             fun_add_note(book)
@@ -112,12 +110,11 @@ def main():
             # Відалення нотатки
             fun_delete_note(book)
 
-        else:
+        else: 
             print("The command was not found. Please enter another command.")
 
         # Запит на введення команди від користувача з можливістю автодоповнення
-        command = prompt(
-            'Write a command (help - all commands): ', completer=completer)
+        command = prompt('Write a command (help - all commands): ', completer=completer)
 
         # Збереження книги
         save_book(book)
@@ -126,11 +123,13 @@ def main():
 def load_book():
     # Завантаження адресної книги з файлу
     try:
-        with open(FILENAME, 'rb') as file:
+        with open(FILENAME, 'rb') as file: 
             return load(file)
     except FileNotFoundError:
         return AddressBook()
-
+    except Exception as e:
+        print(f'EXCEPION: {e}')
+        return AddressBook()
 
 def save_book(address_book):
     # Збереження адресної книги у файл
@@ -202,16 +201,15 @@ def fun_add_contact(address_book, name):
             break
         except ValueError:
             # Обробка виключення, якщо введено некоректний формат дня народження
-            birthday = input(
-                f'Enter the birthday (Year-month-day) (c - close): ')
+            birthday = input(f'Enter the birthday (Year-month-day) (c - close): ')
 
     # Користувачу пропонується ввести електронну пошту для контакту
     email = input(f'Enter the email adress (c - close): ')
 
-    # Ввод електронної пошти для контакту, можливо введення 'c' для закриття
+     # Ввод електронної пошти для контакту, можливо введення 'c' для закриття
     while email != 'c':
         try:
-            # Додає електронну пошту до запису контакту
+             # Додає електронну пошту до запису контакту
             record.add_email(email)
             break
         except ValueError:
@@ -226,21 +224,19 @@ def fun_add_contact(address_book, name):
         record.set_address(address)
 
 
-def fun_edit_contact(address_book, contact_name=""):
+def fun_edit_contact(address_book, contact_name = ""):
     if not contact_name:
-        contact_name = input(
-            'Write the name of contact in which you want to change something: ')
+        contact_name = input('Write the name of contact in which you want to change something: ')
 
     if contact_name in address_book.data:
         contact_edit = address_book.data[contact_name]
         print(f'Contact found')
 
         while True:
-            edit = input(
-                'Enter what you want to edit(n - name, p - phone, b - birthday, a - address, e - email) (c - close): ')
+            edit = input('Enter what you want to edit(n - name, p - phone, b - birthday, a - address, e - email) (c - close): ')
 
             if edit.lower() == 'c':
-                break
+                break 
 
             elif edit == 'n':
                 new_name = input('Enter the new name (c - close): ')
@@ -252,8 +248,7 @@ def fun_edit_contact(address_book, contact_name=""):
                         print('New name cannot be empty. Contact name not updated.')
                     else:
                         # Оновлюємо ім’я контакту в адресній книзі
-                        address_book.update_contact_name(
-                            contact_name, new_name, address_book.notes_manager, FILENAME2)
+                        address_book.update_contact_name(contact_name, new_name, address_book.notes_manager, FILENAME2)
                         print(f'Contact name update to {new_name}.')
                         contact_name = new_name
                 else:
@@ -266,15 +261,13 @@ def fun_edit_contact(address_book, contact_name=""):
                         if not (len(new_phone) == 10 and new_phone.isdigit()):
                             raise ValueError
                         len_phones = len(contact_edit.phones)
-                        if len_phones == 0:
+                        if  len_phones == 0:
                             contact_edit.add_phone(new_phone)
                         elif len_phones == 1:
                             while True:
-                                choice = input(
-                                    f'Enter what you want (c - correct phone {contact_edit.phones[0].value}, a - add a new phone): ')
+                                choice = input(f'Enter what you want (c - correct phone {contact_edit.phones[0].value}, a - add a new phone): ')
                                 if choice == 'c':
-                                    contact_edit.edit_phone(
-                                        contact_edit.phones[0].value, new_phone)
+                                    contact_edit.edit_phone(contact_edit.phones[0].value, new_phone)
                                     break
                                 elif choice == 'a':
                                     contact_edit.add_phone(new_phone)
@@ -282,10 +275,8 @@ def fun_edit_contact(address_book, contact_name=""):
                         else:
                             question_text = 'What phone number will we correct: '
                             for i in range(len_phones):
-                                question_text += str(i + 1) + ' - ' + \
-                                    contact_edit.phones[i].value + ', '
-                            question_text += str(len_phones + 1) + \
-                                ' - add a new phone: '
+                                question_text += str(i + 1) + ' - ' + contact_edit.phones[i].value + ', '
+                            question_text += str(len_phones + 1) + ' - add a new phone: '
                             while True:
                                 number = input(question_text)
                                 if number.isdigit():
@@ -297,15 +288,12 @@ def fun_edit_contact(address_book, contact_name=""):
                                 else:
                                     print('Only numbers are required.')
                             if number > 0 and number <= len_phones:
-                                contact_edit.edit_phone(
-                                    contact_edit.phones[number - 1].value, new_phone)
+                                contact_edit.edit_phone(contact_edit.phones[number - 1].value, new_phone)
                             else:
                                 contact_edit.add_phone(new_phone)
-                        new_phone = input(
-                            "Enter new phone number (c - close): ")
+                        new_phone = input("Enter new phone number (c - close): ")
                     except ValueError:
-                        new_phone = input(
-                            'Enter the valid phone (10 digits) (c - close): ')
+                        new_phone = input('Enter the valid phone (10 digits) (c - close): ')
             elif edit == 'b':
                 new_birthday = input('Enter new birthday (c - close): ')
                 while new_birthday != 'c':
@@ -313,8 +301,7 @@ def fun_edit_contact(address_book, contact_name=""):
                         contact_edit.set_birthday(new_birthday)
                         break
                     except ValueError:
-                        new_birthday = input(
-                            'Enter the birthday (Year-month-day) (c - close): ')
+                        new_birthday = input('Enter the birthday (Year-month-day) (c - close): ')
             elif edit == 'a':
                 new_address = input('Enter new address (c - close): ')
                 if new_address != 'c':
@@ -340,8 +327,7 @@ def fun_delete_contact(address_book):
     # Видалення контакту з книги контактів
     contact_name = input('Enter the name of contact you want to delete: ')
     if contact_name in address_book.data:
-        question = input(
-            f'Are you sure you want to delete this contact {contact_name}? (yes or no): ')
+        question = input(f'Are you sure you want to delete this contact {contact_name}? (yes or no): ')
         if question == 'yes':
             del address_book.data[contact_name]
             print('Contact deleted')
@@ -370,7 +356,7 @@ def fun_delete_phone(address_book):
                 else:
                     print('Phone number not found.')
         else:
-            print('There are no phone numbers to delete.')
+            print('There are no phone numbers to delete.')            
     else:
         print(f'Contact with the name {contact_name} not found.')
 
@@ -381,20 +367,18 @@ def print_table(AddressBook, text_title):
     # Перевірка на порожню книгу
     if not AddressBook.data:
         print("The contact book is empty.")
-        return
+        return 
 
     # Створення об'єкту Console
     console = Console()
 
     # Створення таблиці
-    table = Table(title=text_title, show_header=True,
-                  header_style="bold magenta")
+    table = Table(title = text_title, show_header=True, header_style="bold magenta")
     table.title_align = "center"
     table.title_style = "bold yellow"
 
     # Додавання стовпців до таблиці
-    table.add_column("Contact name", style="magenta",
-                     width=20, justify="center")
+    table.add_column("Contact name", style="magenta", width=20, justify="center")
     table.add_column("Phones", style="cyan", width=40, justify="center")
     table.add_column("Birthday", style="green", width=20, justify="center")
     table.add_column("Address", style="yellow", width=40, justify="center")
@@ -417,8 +401,7 @@ def print_table(AddressBook, text_title):
 
 def fun_upcoming_birthdays(address_book):
     # Команда для виводу наближених днів народження
-    days_count = input(
-        'Enter the number of days to check upcoming birthdays: ')
+    days_count = input('Enter the number of days to check upcoming birthdays: ')
     try:
         days_count = int(days_count)
         if days_count < 0:
@@ -431,42 +414,39 @@ def fun_upcoming_birthdays(address_book):
         new_book = AddressBook()
         for contact in upcoming_birthdays:
             new_book.add_record(contact)
-        print_table(
-            new_book, f'Upcoming birthdays within the next {days_count} days')
+        print_table(new_book, f'Upcoming birthdays within the next {days_count} days')
     else:
         print(f'No upcoming birthdays within the next {days_count} days.')
 
 
 def get_upcoming_birthdays(address_book, days_count):
     # Список для зберігання записів з найближчими днями народженнями
-    upcoming_birthdays = []
+    upcoming_birthdays = []    
 
-    # Отримання поточної дати та часу
-    today = datetime.today()
+    # Отримання поточної дати та часу                
+    today = datetime.today()          
 
-    # Перебір записів у адресній книзі
+    # Перебір записів у адресній книзі       
     for record in address_book.data.values():
         # Перевірка, чи є в запису вказана дата народження
 
-        if record.birthday:
+        if record.birthday:                    
             # Формування дати наступного дня народження
-            next_birthday = datetime(
-                today.year, record.birthday.month, record.birthday.day)
+            next_birthday = datetime(today.year, record.birthday.month, record.birthday.day)  
 
-            # Якщо день народження вже минув у поточному році, обчислити для наступного року
-            if next_birthday < today:
-                next_birthday = datetime(
-                    today.year + 1, record.birthday.month, record.birthday.day)
+            # Якщо день народження вже минув у поточному році, обчислити для наступного року        
+            if next_birthday < today:                                                                  
+                next_birthday = datetime(today.year + 1, record.birthday.month, record.birthday.day)  
 
             # Обчислення різниці в часі між сьогоднішньою датою і наступним днем народження
-            delta = next_birthday - today
+            delta = next_birthday - today           
 
-            # Перевірка, чи день народження відбудеться в межах визначеної кількості днів
-            if 0 <= delta.days <= days_count:
+            # Перевірка, чи день народження відбудеться в межах визначеної кількості днів                                                   
+            if 0 <= delta.days <= days_count:                                                          
                 upcoming_birthdays.append(record)
 
     # Повернення списку з записами, у яких найближчий день народження наступає впродовж зазначеної кількості днів
-    return upcoming_birthdays
+    return upcoming_birthdays                                                                          
 
 
 def fun_add_note(address_book):
@@ -490,7 +470,7 @@ def fun_add_note(address_book):
 
         tags_input = input('Enter tags (comma-separated): ')
         tags = [tag.strip() for tag in tags_input.split(',')]
-
+        
         # Додавання нотатки та тегів до менеджера нотаток
         address_book.notes_manager.add_note_with_tags(author, note_text, tags)
         print('Note added successfully!')
@@ -508,7 +488,6 @@ def fun_show_notes(address_book, filename):
     # Виводить всі нотатки за допомогою методу print_notes
     address_book.notes_manager.print_notes()
 
-
 def fun_search_notes(address_book, filename):
     # Пошук нотатки за словами або автором
     search_term = input(
@@ -518,7 +497,7 @@ def fun_search_notes(address_book, filename):
     address_book.notes_manager.load_notes(filename)
 
     # Фільтрування нотаток за словом або автором
-    filtered_notes = [note for note in address_book.notes_manager.notes if search_term in note.text.lower()
+    filtered_notes = [note for note in address_book.notes_manager.notes if search_term in note.text.lower() 
                       or search_term in note.author.lower()]
 
     # Виведення знайдених нотаток
@@ -539,42 +518,37 @@ def fun_search_notes(address_book, filename):
     else:
         print(f"No notes found for the search term '{search_term}'.")
 
-
 def fun_edit_note(address_book):
     if isinstance(address_book, AddressBook):
         address_book.notes_manager.load_notes(FILENAME2)
         address_book.notes_manager.print_notes()
-
+        
         try:
-            index_to_edit = int(
-                input('Enter the index of the note to edit (0 - cancel): '))
+            index_to_edit = int(input('Enter the index of the note to edit (0 - cancel): '))
             if index_to_edit == 0:
                 return  # Редагування скасовано
         except ValueError:
             print("Invalid input. Please enter a valid integer.")
             return
-
+        
         if 1 <= index_to_edit <= len(address_book.notes_manager.notes):
             new_text = input('Enter the new text for the note: ')
             new_tags_input = input("Enter new tags (comma-separated): ")
             new_tags = [tag.strip() for tag in new_tags_input.split(',')]
-            address_book.notes_manager.edit_note(
-                index_to_edit, new_text, new_tags)
+            address_book.notes_manager.edit_note(index_to_edit, new_text, new_tags)
             address_book.notes_manager.save_notes(FILENAME2)
-
+            
         else:
             print("Invalid note index.")
-
-
+    
 def fun_delete_note(address_book):
     address_book.notes_manager.load_notes(FILENAME2)
     address_book.notes_manager.print_notes()
-    index_to_delete = int(
-        input('Enter the index of the note to delete (0 - cancel): '))
+    index_to_delete = int(input('Enter the index of the note to delete (0 - cancel): '))
 
     if index_to_delete == 0:
         return  # Скасувати видалення
-
+    
     address_book.notes_manager.delete_note(index_to_delete)
     address_book.notes_manager.save_notes(FILENAME2)
     print('Note deleted successfully!')
@@ -586,7 +560,6 @@ class Field:
 
     def __str__(self):
         return str(self.value)
-
 
 class Name(Field):
     # реалізація класу
@@ -603,7 +576,6 @@ class Name(Field):
     def value(self, new_value):
         self._value = new_value
 
-
 class Phone(Field):
     def __init__(self, value):
         if not self.is_valid_phone(value):
@@ -613,12 +585,12 @@ class Phone(Field):
     @staticmethod
     def is_valid_phone(value):
         return len(value) == 10 and value.isdigit()
-
+    
     # getter
     @property
     def value(self):
         return self._value
-
+    
     # setter
     @value.setter
     def value(self, new_value):
@@ -626,8 +598,7 @@ class Phone(Field):
 
     def __str__(self):
         return str(self._value)
-
-
+    
 class Email(Field):
     def __init__(self, value):
         if not self.is_valid_email(value):
@@ -636,13 +607,13 @@ class Email(Field):
 
     @staticmethod
     def is_valid_email(value):
-        return fullmatch(EMAIL_REGULAR, value, flags=IGNORECASE) is not None
-
+        return fullmatch(EMAIL_REGULAR, value, flags = IGNORECASE) is not None
+    
     # getter
     @property
     def value(self):
         return self._value
-
+    
     # setter
     @value.setter
     def value(self, new_value):
@@ -653,7 +624,6 @@ class Email(Field):
     def __str__(self):
         return str(self._value)
 
-
 class Birthday(Field):
     def __init__(self, value):
         super().__init__(value)
@@ -662,12 +632,11 @@ class Birthday(Field):
     @property
     def value(self):
         return self._value
-
+    
     # setter
     @value.setter
     def value(self, new_value):
         self._value = new_value
-
 
 class Address(Field):
     def __init__(self, value):
@@ -677,12 +646,11 @@ class Address(Field):
     @property
     def value(self):
         return self._value
-
+    
     # setter
     @value.setter
     def value(self, new_value):
         self._value = new_value
-
 
 class Notes:
     def __init__(self, text, author, tags=None):
@@ -693,8 +661,7 @@ class Notes:
     def __str__(self):
         tags_str = ', '.join(self.tags) if hasattr(self, 'tags') else ''
         return f"{self.text} (by {self.author}, Tags: {tags_str})"
-
-
+    
 class NoteManager:
     def __init__(self):
         self.notes = []
@@ -706,20 +673,17 @@ class NoteManager:
     def print_notes(self):
         if self.notes:
             console = Console()
-            table = Table(title="Wish list", show_header=True,
-                          header_style="bold magenta")
+            table = Table(title="Wish list", show_header=True, header_style="bold magenta")
             table.title_align = "center"
             table.title_style = "bold yellow"
             table.add_column("Index", style="cyan", width=5, justify="center")
             table.add_column("Note", style="green")
             table.add_column("Author", style="blue")
-            # Додавання стовпця для тегів
-            table.add_column("Tags", style="magenta")
+            table.add_column("Tags", style="magenta")  # Додавання стовпця для тегів
 
             for i, note in enumerate(self.notes, start=1):
                 # Перевірка, чи note має атрибут tags перед його використанням
-                tags_str = ', '.join(note.tags) if hasattr(
-                    note, 'tags') else ''
+                tags_str = ', '.join(note.tags) if hasattr(note, 'tags') else ''
                 table.add_row(str(i), note.text, note.author, tags_str)
 
             console.print(table)
@@ -742,19 +706,12 @@ class NoteManager:
         # index: Індекс нотатки для редагування
         # new_text: Новий текст нотатки
         # new_tags: Нові теги нотатки
-
+        
         if 1 <= index <= len(self.notes):
             note = self.notes[index - 1]
             note.text = new_text
             note.tags = new_tags
             print(f"Note {index} edited successfully.")
-        else:
-            print("Invalid note index.")
-
-    def delete_note(self, index):
-        if 1 <= index <= len(self.notes):
-            deleted_note = self.notes.pop(index - 1)
-            print(f"Note {index} deleted: {deleted_note}")
         else:
             print("Invalid note index.")
 
@@ -786,11 +743,11 @@ class Record:
     def add_phone(self, phone):
         phone = Phone(phone)
         self.phones.append(phone)
-
+        
     def add_email(self, email):
         email = Email(email)
         self.email = email
-
+            
     def edit_phone(self, old_phone=None, new_phone=None):
         # Редагування телефону
         found = False
@@ -799,10 +756,10 @@ class Record:
                 phone.value = new_phone
                 found = True
                 break
-
+        
         if not found:
             raise ValueError(f"Phone {old_phone} not found in the record")
-
+    
     def edit_email(self, new_email):
         if not Email.is_valid_email(new_email):
             raise ValueError('Invalid email format')
@@ -835,11 +792,9 @@ class Record:
         # Знаходження кількості днів до дня народження
         if self.birthday:
             today = datetime.today()
-            next_birthday = datetime(
-                today.year, self.birthday.month, self.birthday.day)
+            next_birthday = datetime(today.year, self.birthday.month, self.birthday.day)
             if next_birthday < today:
-                next_birthday = datetime(
-                    today.year + 1, self.birthday.month, self.birthday.day)
+                next_birthday = datetime(today.year + 1, self.birthday.month, self.birthday.day)
             delta = next_birthday - today
             return f'There are {delta.days} days left before the birthday.'
         else:
@@ -858,7 +813,7 @@ class Record:
             contact_info += f", address: {self.address.value}"
         if self.notes:
             contact_info += f" \nNotes: \n "
-            for i, note in enumerate(self.notes, start=1):
+            for i, note in enumerate(self.notes, start = 1):
                 contact_info += f"{i}.{note}\n"
         return contact_info
 
@@ -898,10 +853,9 @@ class AddressBook(UserDict):
 
             # Оновлення імені в нотатках
             notes_manager.update_notes_author(old_name, new_name, filename)
-
+            
     def __iter__(self):
-        # items_per_page - кількість записів на сторінці
-        return AddressBookIterator(self, items_per_page=5)
+        return AddressBookIterator(self, items_per_page=5)  # items_per_page - кількість записів на сторінці
 
     def search_contact(self):
         # пошук контактів серед контактів книги
@@ -916,8 +870,7 @@ class AddressBook(UserDict):
         elif suggestions:
             print(f"Possible suggestions: {', '.join(suggestions)}")
         else:
-            print(
-                f"Contact '{search_query}' not found. Phone number, address, and email were also not found.")
+            print(f"Contact '{search_query}' not found. Phone number, address, and email were also not found.")
 
     def search(self, query):
         results = []
@@ -965,8 +918,8 @@ class AddressBookIterator:
         return self
 
     def __next__(self):
-        # Метод обчислює індекс початку (start) і кінця (end) діапазону записів, які повинні бути виведені на поточній сторінці.
-        # Наприклад, якщо items_per_page дорівнює 5, то на першій сторінці будуть виводитися записи з індексами 0 до 4,
+        # Метод обчислює індекс початку (start) і кінця (end) діапазону записів, які повинні бути виведені на поточній сторінці. 
+        # Наприклад, якщо items_per_page дорівнює 5, то на першій сторінці будуть виводитися записи з індексами 0 до 4, 
         # на другій сторінці - з 5 до 9, і так далі.
         start = self.current_page * self.items_per_page
         end = start + self.items_per_page
