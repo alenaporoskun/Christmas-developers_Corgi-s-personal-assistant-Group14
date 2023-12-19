@@ -25,6 +25,7 @@ FILENAME = path.join(CURRENT_DIRECTORY, 'data', 'address_book.pkl')
 # Побудувати абсолютний шлях до файлу notes.pkl у підкаталозі 'data'
 FILENAME2 = path.join(CURRENT_DIRECTORY, 'data', 'notes.pkl')
             
+
 def main():
     # Спробувати створити папку 'data'
     data_folder_path = path.join(CURRENT_DIRECTORY, 'data')
@@ -160,6 +161,9 @@ def fun_add_contact(address_book, name):
     if name in address_book.data:
         print('Such a contact already exists.')
         return
+    elif name == "":
+        print('Name cannot be empty.')
+        return
 
     # Створюється новий запис (контакт) з ім'ям name
     record = Record(name)
@@ -222,14 +226,34 @@ def fun_add_contact(address_book, name):
 def fun_edit_contact(address_book, contact_name = ""):
     if not contact_name:
         contact_name = input('Write the name of contact in which you want to change something: ')
+
     if contact_name in address_book.data:
         contact_edit = address_book.data[contact_name]
         print(f'Contact found')
+
         while True:
-            edit = input('Enter what you want to edit(p - phone, b - birthday, a - address, e - email) (c - close): ')
+            edit = input('Enter what you want to edit(n - name, p - phone, b - birthday, a - address, e - email) (c - close): ')
+
             if edit.lower() == 'c':
                 break 
-            if edit == 'p':
+
+            elif edit == 'n':
+                new_name = input('Enter the new name (c - close): ')
+                if new_name.lower() != 'c':
+                    # Перевіряємо, чи нове ім’я вже існує в адресній книзі
+                    if new_name in address_book.data:
+                        print('A contact with that name already exists.')
+                    elif new_name == "":
+                        print('New name cannot be empty. Contact name not updated.')
+                    else:
+                        # Оновлюємо ім’я контакту в адресній книзі
+                        address_book.update_contact_name(contact_name, new_name)
+                        print(f'Contact name update to {new_name}.')
+                        contact_name = new_name
+                else:
+                    print('Name not changed')
+
+            elif edit == 'p':
                 new_phone = input("Enter new phone number (c - close): ")
                 while new_phone != 'c':
                     try:
@@ -690,6 +714,7 @@ class NoteManager:
         else:
             print("Invalid note index.")
 
+
     def delete_note(self, index):
         if 1 <= index <= len(self.notes):
             deleted_note = self.notes.pop(index - 1)
@@ -813,6 +838,18 @@ class AddressBook(UserDict):
         if name in self.data:
             del self.data[name]
 
+    def update_contact_name(self, old_name, new_name):
+        # Оновлення імені контакту
+
+        # Перевірка, чи ім'я контакту існує в адресній книзі
+        if old_name in self.data:
+            # Вилучення запису за старим ім'ям
+            record = self.data.pop(old_name)
+            # Оновлення імені в самому об'єкті запису
+            record.name.value = new_name
+            # Додавання оновленого запису з новим іменем до адресної книги
+            self.data[new_name] = record
+            
     def __iter__(self):
         return AddressBookIterator(self, items_per_page=5)  # items_per_page - кількість записів на сторінці
 
