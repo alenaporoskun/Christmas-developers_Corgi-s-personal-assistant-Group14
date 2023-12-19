@@ -21,10 +21,10 @@
 
 │    └── README_ua.md  
 
-* Next, the package is installed into the system with the command ```python pip install -e .```. (or ```python python setup.py install```, requires administrator rights).
+* Next, the package is installed into the system with the command ```pip install -e .```. (or ```pip install .```).
 * After installation, the clean_folder package appears in the system.
 * When the package is installed in the system, the script can be called anywhere from the console with 
-```python
+```
 console-assistant
 ``` 
 
