@@ -13,23 +13,27 @@ from prompt_toolkit.completion import WordCompleter
 from re import fullmatch
 from re import IGNORECASE
 
-from file_sorter import sorter
+# Спробуємо імпортувати модуль sorter з пакету file_sorter.
+# Якщо модуль не знайдено (ModuleNotFoundError), то спробуємо імпортувати його з іншого шляху.     
+try:
+    from console_assistant.file_sorter import sorter
+except ModuleNotFoundError: 
+    from file_sorter import sorter
 
 # Регулярний вираз для перевірки email
 EMAIL_REGULAR = r"[a-z][a-z0-9_.]+[@][a-z.]+[.][a-z]{2,}"
 
-# Отримати поточну робочу директорію
+# Отримуємо повний шлях до поточного робочого каталогу, де розташований цей скрипт
 CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
 
-# Побудувати абсолютний шлях до файлу address_book.pkl у підкаталозі 'data'
+# Побудуємо абсолютний шлях до файлу address_book.pkl у підкаталозі 'data'
 FILENAME = path.join(CURRENT_DIRECTORY, 'data', 'address_book.pkl')
 
-# Побудувати абсолютний шлях до файлу notes.pkl у підкаталозі 'data'
+# Побудуємо абсолютний шлях до файлу notes.pkl у підкаталозі 'data'
 FILENAME2 = path.join(CURRENT_DIRECTORY, 'data', 'notes.pkl')
-            
 
 def main():
-    # Спробувати створити папку 'data'
+    # Створення папки 'data'
     data_folder_path = path.join(CURRENT_DIRECTORY, 'data')
     makedirs(data_folder_path, exist_ok=True)
 
@@ -40,7 +44,7 @@ def main():
 
     # Список доступних команд
     commands = ['help', 'add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'delete-phone', 'upcoming-birthdays', 
-                'add-note', 'show-notes', 'search-contact', 'search-notes', 'sort-files', 'edit-note', 'delete-note', 'exit']
+                'add-note', 'show-notes', 'search-contact', 'search-notes', 'edit-note', 'delete-note', 'sort-files', 'exit']
 
     # Створення об'єкту WordCompleter, який використовується для автодоповнення команд
     completer = WordCompleter(commands, ignore_case=True)
@@ -114,7 +118,7 @@ def main():
             fun_delete_note(book)
 
         elif command == 'sort-files':
-            # Відалення нотатки
+            # Сортування файлів по папкам 
             fun_sort_files()
 
         else: 
@@ -134,7 +138,9 @@ def load_book():
             return load(file)
     except FileNotFoundError:
         return AddressBook()
-
+    except Exception as e:
+        print("EXCEPTION\n", e)
+        return AddressBook()
 
 def save_book(address_book):
     # Збереження адресної книги у файл
@@ -150,8 +156,8 @@ def print_menu_commmands():
     - delete-contact      - delete contact
     - delete-phone        - delete phone from some contact
     - show-contacts       - display all contacts in the address book
-    - upcoming-birthdays  - display a list of contacts whose birthday is a specified number of days from the current date
     - search-contact      - search for contacts in the address book
+    - upcoming-birthdays  - display a list of contacts whose birthday is a specified number of days from the current date
     - add-note            - add note with author if he/she is in the contact book
     - show-notes          - show all notes with authors and tags
     - search-notes        - search for a note by word or author
@@ -254,7 +260,7 @@ def fun_edit_contact(address_book, contact_name = ""):
                         print('New name cannot be empty. Contact name not updated.')
                     else:
                         # Оновлюємо ім’я контакту в адресній книзі
-                        address_book.update_contact_name(contact_name, new_name)
+                        address_book.update_contact_name(contact_name, new_name, address_book.notes_manager)
                         print(f'Contact name update to {new_name}.')
                         contact_name = new_name
                 else:
@@ -559,6 +565,7 @@ def fun_delete_note(address_book):
     address_book.notes_manager.save_notes(FILENAME2)
     print('Note deleted successfully!')
 
+
 def fun_sort_files():
     # за замовчування папка - example ,
     # щоб не сортувавало поточну папку при пустому параметрі
@@ -567,7 +574,6 @@ def fun_sort_files():
         folder = input('Enter the directory to sort (c - cancel): ').strip()
         if folder and folder != 'c':
             sorter(folder)
-    
 
 class Field:
     def __init__(self, value):
@@ -730,13 +736,20 @@ class NoteManager:
         else:
             print("Invalid note index.")
 
-
     def delete_note(self, index):
         if 1 <= index <= len(self.notes):
             deleted_note = self.notes.pop(index - 1)
             print(f"Note {index} deleted: {deleted_note}")
         else:
             print("Invalid note index.")
+
+    def update_notes_author(self, old_author, new_author, filename):
+        for note in self.notes:
+            if note.author == old_author:
+                note.author = new_author
+
+        # Збереження оновленного нотатка у файл
+        self.save_notes(filename)
 
 
 class Record:
@@ -847,7 +860,7 @@ class AddressBook(UserDict):
         if name in self.data:
             del self.data[name]
 
-    def update_contact_name(self, old_name, new_name):
+    def update_contact_name(self, old_name, new_name, notes_manager):
         # Оновлення імені контакту
 
         # Перевірка, чи ім'я контакту існує в адресній книзі
@@ -858,6 +871,9 @@ class AddressBook(UserDict):
             record.name.value = new_name
             # Додавання оновленого запису з новим іменем до адресної книги
             self.data[new_name] = record
+
+            # Оновлення імені в нотатках
+            notes_manager.update_notes_author(old_name, new_name, FILENAME2)
             
     def __iter__(self):
         return AddressBookIterator(self, items_per_page=5)  # items_per_page - кількість записів на сторінці
