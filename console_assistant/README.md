@@ -13,6 +13,8 @@
 
 │    │   ├── main.py   
 
+│    │   ├── file_sorter.py 
+
 │    │   └── __init__.py   
 
 │    └── setup.py   
@@ -54,4 +56,5 @@ All the commands of our personal assistant for Mr. Corgi:
 - search-notes        - search for a note by word or author
 - edit-note           - editing a note
 - delete-note         - delete note
+- sort-files          - sort files in a directory 
 - exit                - exit the Assistant
