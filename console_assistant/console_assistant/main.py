@@ -725,13 +725,6 @@ class NoteManager:
             print("Invalid note index.")
 
 
-    def delete_note(self, index):
-        if 1 <= index <= len(self.notes):
-            deleted_note = self.notes.pop(index - 1)
-            print(f"Note {index} deleted: {deleted_note}")
-        else:
-            print("Invalid note index.")
-
 class Record:
     def __init__(self, name):
         self.name = Name(name)
