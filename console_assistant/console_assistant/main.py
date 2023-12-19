@@ -16,13 +16,13 @@ from re import IGNORECASE
 # Регулярний вираз для перевірки email
 EMAIL_REGULAR = r"[a-z][a-z0-9_.]+[@][a-z.]+[.][a-z]{2,}"
 
-# Отримати поточну робочу директорію
+# Отримуємо повний шлях до поточного робочого каталогу, де розташований цей скрипт
 CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
 
-# Побудувати абсолютний шлях до файлу address_book.pkl у підкаталозі 'data'
+# Побудуємо абсолютний шлях до файлу address_book.pkl у підкаталозі 'data'
 FILENAME = path.join(CURRENT_DIRECTORY, 'data', 'address_book.pkl')
 
-# Побудувати абсолютний шлях до файлу notes.pkl у підкаталозі 'data'
+# Побудуємо абсолютний шлях до файлу notes.pkl у підкаталозі 'data'
 FILENAME2 = path.join(CURRENT_DIRECTORY, 'data', 'notes.pkl')
             
 def main():
@@ -130,7 +130,6 @@ def load_book():
     except Exception as e:
         print(f'EXCEPION: {e}')
         return AddressBook()
-
 
 def save_book(address_book):
     # Збереження адресної книги у файл
@@ -249,7 +248,7 @@ def fun_edit_contact(address_book, contact_name = ""):
                         print('New name cannot be empty. Contact name not updated.')
                     else:
                         # Оновлюємо ім’я контакту в адресній книзі
-                        address_book.update_contact_name(contact_name, new_name)
+                        address_book.update_contact_name(contact_name, new_name, address_book.notes_manager)
                         print(f'Contact name update to {new_name}.')
                         contact_name = new_name
                 else:
@@ -716,13 +715,20 @@ class NoteManager:
         else:
             print("Invalid note index.")
 
-
     def delete_note(self, index):
         if 1 <= index <= len(self.notes):
             deleted_note = self.notes.pop(index - 1)
             print(f"Note {index} deleted: {deleted_note}")
         else:
             print("Invalid note index.")
+
+    def update_notes_author(self, old_author, new_author, filename):
+        for note in self.notes:
+            if note.author == old_author:
+                note.author = new_author
+
+        # Збереження оновленного нотатка у файл
+        self.save_notes(filename)
 
 
 class Record:
@@ -833,7 +839,7 @@ class AddressBook(UserDict):
         if name in self.data:
             del self.data[name]
 
-    def update_contact_name(self, old_name, new_name):
+    def update_contact_name(self, old_name, new_name, notes_manager):
         # Оновлення імені контакту
 
         # Перевірка, чи ім'я контакту існує в адресній книзі
@@ -844,6 +850,9 @@ class AddressBook(UserDict):
             record.name.value = new_name
             # Додавання оновленого запису з новим іменем до адресної книги
             self.data[new_name] = record
+
+            # Оновлення імені в нотатках
+            notes_manager.update_notes_author(old_name, new_name, FILENAME2)
             
     def __iter__(self):
         return AddressBookIterator(self, items_per_page=5)  # items_per_page - кількість записів на сторінці
