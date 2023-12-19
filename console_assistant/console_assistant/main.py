@@ -17,7 +17,7 @@ from re import IGNORECASE
 EMAIL_REGULAR = r"[a-z][a-z0-9_.]+[@][a-z.]+[.][a-z]{2,}"
 
 # Отримати поточну робочу директорію
-CURRENT_DIRECTORY = getcwd()
+CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
 
 # Побудувати абсолютний шлях до файлу address_book.pkl у підкаталозі 'data'
 FILENAME = path.join(CURRENT_DIRECTORY, 'data', 'address_book.pkl')
@@ -25,7 +25,6 @@ FILENAME = path.join(CURRENT_DIRECTORY, 'data', 'address_book.pkl')
 # Побудувати абсолютний шлях до файлу notes.pkl у підкаталозі 'data'
 FILENAME2 = path.join(CURRENT_DIRECTORY, 'data', 'notes.pkl')
             
-
 def main():
     # Спробувати створити папку 'data'
     data_folder_path = path.join(CURRENT_DIRECTORY, 'data')
@@ -127,6 +126,9 @@ def load_book():
         with open(FILENAME, 'rb') as file: 
             return load(file)
     except FileNotFoundError:
+        return AddressBook()
+    except Exception as e:
+        print(f'EXCEPION: {e}')
         return AddressBook()
 
 
