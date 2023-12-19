@@ -204,7 +204,7 @@ def sorter(new_folder = "example"):
             rename_files(MAIN_FOLDER, list_of_all_files)
             unpack_the_archives(MAIN_FOLDER)
             delete_empty_folders(MAIN_FOLDER)
-            print(f"\nFolder {MAIN_FOLDER} is sorted.")
+            print(f"Folder {MAIN_FOLDER} is sorted.")
 
 
 if __name__ == "__main__":
