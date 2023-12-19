@@ -248,7 +248,7 @@ def fun_edit_contact(address_book, contact_name = ""):
                         print('New name cannot be empty. Contact name not updated.')
                     else:
                         # Оновлюємо ім’я контакту в адресній книзі
-                        address_book.update_contact_name(contact_name, new_name, address_book.notes_manager, FILENAME2)
+                        address_book.update_contact_name(contact_name, new_name, address_book.notes_manager)
                         print(f'Contact name update to {new_name}.')
                         contact_name = new_name
                 else:
@@ -839,7 +839,7 @@ class AddressBook(UserDict):
         if name in self.data:
             del self.data[name]
 
-    def update_contact_name(self, old_name, new_name, notes_manager, filename):
+    def update_contact_name(self, old_name, new_name, notes_manager):
         # Оновлення імені контакту
 
         # Перевірка, чи ім'я контакту існує в адресній книзі
@@ -852,7 +852,7 @@ class AddressBook(UserDict):
             self.data[new_name] = record
 
             # Оновлення імені в нотатках
-            notes_manager.update_notes_author(old_name, new_name, filename)
+            notes_manager.update_notes_author(old_name, new_name, FILENAME2)
             
     def __iter__(self):
         return AddressBookIterator(self, items_per_page=5)  # items_per_page - кількість записів на сторінці
