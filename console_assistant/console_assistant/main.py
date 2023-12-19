@@ -497,19 +497,24 @@ def fun_edit_note(address_book):
     if isinstance(address_book, AddressBook):
         address_book.notes_manager.load_notes(FILENAME2)
         address_book.notes_manager.print_notes()
-        index_to_edit = int(input('Enter the index of the note to edit (0 - cancel): '))
-    if index_to_edit == 0:
-        return  # Редагування скасовано
-    
-    if 1 <= index_to_edit <= len(address_book.notes_manager.notes):
-        print(f"Editing Note {index_to_edit}: {address_book.notes_manager.notes[index_to_edit - 1]}")
-        new_text = input('Enter the new text for the note: ')
-        address_book.notes_manager.edit_note(index_to_edit, new_text)
-        address_book.notes_manager.save_notes(FILENAME2)
-        # print('Note edited successfully!')
-
-    else:
-        print("Invalid note index.")
+        
+        try:
+            index_to_edit = int(input('Enter the index of the note to edit (0 - cancel): '))
+            if index_to_edit == 0:
+                return  # Редагування скасовано
+        except ValueError:
+            print("Invalid input. Please enter a valid integer.")
+            return
+        
+        if 1 <= index_to_edit <= len(address_book.notes_manager.notes):
+            new_text = input('Enter the new text for the note: ')
+            new_tags_input = input("Enter new tags (comma-separated): ")
+            new_tags = [tag.strip() for tag in new_tags_input.split(',')]
+            address_book.notes_manager.edit_note(index_to_edit, new_text, new_tags)
+            address_book.notes_manager.save_notes(FILENAME2)
+            
+        else:
+            print("Invalid note index.")
     
 def fun_delete_note(address_book):
     address_book.notes_manager.load_notes(FILENAME2)
@@ -671,12 +676,27 @@ class NoteManager:
         except FileNotFoundError:
             self.notes = []
 
-    def edit_note(self, index, new_text):
+    def edit_note(self, index, new_text=None, new_tags=None):
+        # Редагує нотатку з вказаним індексом.
+        # index: Індекс нотатки для редагування
+        # new_text: Новий текст нотатки
+        # new_tags: Нові теги нотатки
+        
         if 1 <= index <= len(self.notes):
-            self.notes[index - 1].text = new_text
+            note = self.notes[index - 1]
+            note.text = new_text
+            note.tags = new_tags
             print(f"Note {index} edited successfully.")
         else:
             print("Invalid note index.")
+
+    def delete_note(self, index):
+        if 1 <= index <= len(self.notes):
+            deleted_note = self.notes.pop(index - 1)
+            print(f"Note {index} deleted: {deleted_note}")
+        else:
+            print("Invalid note index.")
+
 
     def delete_note(self, index):
         if 1 <= index <= len(self.notes):
