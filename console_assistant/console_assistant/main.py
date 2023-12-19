@@ -2,7 +2,6 @@ from collections import UserDict
 from datetime import datetime
 from pickle import dump, load
 from os import path
-from os import getcwd, makedirs
 
 from rich.console import Console
 from rich.table import Table
@@ -16,20 +15,16 @@ from re import IGNORECASE
 # Регулярний вираз для перевірки email
 EMAIL_REGULAR = r"[a-z][a-z0-9_.]+[@][a-z.]+[.][a-z]{2,}"
 
-# Отримати поточну робочу директорію
-CURRENT_DIRECTORY = getcwd()
+# Отримання поточного каталогу, в якому знаходиться виконуваний файл
+CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
 
-# Побудувати абсолютний шлях до файлу address_book.pkl у підкаталозі 'data'
-FILENAME = path.join(CURRENT_DIRECTORY, 'data', 'address_book.pkl')
+# Створення повного шляху до файлу "address_book.pkl" в поточному каталозі
+FILENAME = path.join(CURRENT_DIRECTORY, 'address_book.pkl')
 
-# Побудувати абсолютний шлях до файлу notes.pkl у підкаталозі 'data'
-FILENAME2 = path.join(CURRENT_DIRECTORY, 'data', 'notes.pkl')
+# Створення повного шляху до файлу "notes.pkl" в поточному каталозі
+FILENAME2 = path.join(CURRENT_DIRECTORY, 'notes.pkl')
             
 def main():
-    # Спробувати створити папку 'data'
-    data_folder_path = path.join(CURRENT_DIRECTORY, 'data')
-    makedirs(data_folder_path, exist_ok=True)
-
     # Завантаження адресної книги або створення нової
     book = load_book()
 
@@ -102,8 +97,8 @@ def main():
             # Пошук нотатки серед нотаток книги
             fun_search_notes(book, FILENAME2)
 
-        elif command == 'edit-note':
-            # Редагування нотатки
+        elif command[:9] == 'edit-note':
+            # Запустіть функцію для редагування нотаток
             fun_edit_note(book)
 
         elif command == 'delete-note':
@@ -146,7 +141,7 @@ def print_menu_commmands():
     - upcoming-birthdays  - display a list of contacts whose birthday is a specified number of days from the current date
     - search-contact      - search for contacts in the address book
     - add-note            - add note with author if he/she is in the contact book
-    - show-notes          - show all notes with authors and tags
+    - show-notes          - show all notes with authors
     - search-notes        - search for a note by word or author
     - edit-note           - editing a note
     - delete-note         - delete note
@@ -341,7 +336,7 @@ def print_table(AddressBook, text_title):
 
     # Перевірка на порожню книгу
     if not AddressBook.data:
-        print("The contact book is empty.")
+        print("\n  The contact book is empty.\n")
         return 
 
     # Створення об'єкту Console
@@ -424,20 +419,13 @@ def get_upcoming_birthdays(address_book, days_count):
     return upcoming_birthdays                                                                          
 
 
+
 def fun_add_note(address_book):
-    # Додавання нотатки
     author = input('Enter an author of note (c - close): ')
-
-    # Перевірка, чи користувач вибрав опцію закриття
-    if author.lower() == 'c':
-        return
-
-    # Перевірка, чи автор існує в телефонній книзі
     if author not in address_book.data:
         print('The author is not found in the contact book.')
         return
 
-    # Введення тексту нотатки та тегів
     while True:
         note_text = input('Enter your note (c - close): ')
         if note_text.lower() == 'c':
@@ -446,11 +434,9 @@ def fun_add_note(address_book):
         tags_input = input('Enter tags (comma-separated): ')
         tags = [tag.strip() for tag in tags_input.split(',')]
         
-        # Додавання нотатки та тегів до менеджера нотаток
         address_book.notes_manager.add_note_with_tags(author, note_text, tags)
         print('Note added successfully!')
 
-    # Збереження нотаток у файл
     address_book.notes_manager.save_notes(FILENAME2)
 
 
@@ -497,19 +483,26 @@ def fun_edit_note(address_book):
     if isinstance(address_book, AddressBook):
         address_book.notes_manager.load_notes(FILENAME2)
         address_book.notes_manager.print_notes()
-        index_to_edit = int(input('Enter the index of the note to edit (0 - cancel): '))
-    if index_to_edit == 0:
-        return  # Редагування скасовано
-    
-    if 1 <= index_to_edit <= len(address_book.notes_manager.notes):
-        print(f"Editing Note {index_to_edit}: {address_book.notes_manager.notes[index_to_edit - 1]}")
-        new_text = input('Enter the new text for the note: ')
-        address_book.notes_manager.edit_note(index_to_edit, new_text)
-        address_book.notes_manager.save_notes(FILENAME2)
-        # print('Note edited successfully!')
+        
+        try:
+            index_to_edit = int(input('Enter the index of the note to edit (0 - cancel): '))
+            if index_to_edit == 0:
+                return  # Редагування скасовано
+            
+        except ValueError:
+            print("Invalid input. Please enter a valid integer.")
+            return
 
-    else:
-        print("Invalid note index.")
+        if 1 <= index_to_edit <= len(address_book.notes_manager.notes):
+            new_text = input('Enter the new text for the note: ')
+            new_author = input("Enter new author: ")
+            new_tags_input = input("Enter new tags (comma-separated): ")
+            new_tags = [tag.strip() for tag in new_tags_input.split(',')]
+            address_book.notes_manager.edit_note(index_to_edit, new_text, new_author, new_tags)
+            address_book.notes_manager.save_notes(FILENAME2)
+            
+        else:
+            print("Invalid note index.")
     
 def fun_delete_note(address_book):
     address_book.notes_manager.load_notes(FILENAME2)
@@ -623,6 +616,9 @@ class Address(Field):
         self._value = new_value
 
 class Notes:
+    # def __init__(self, text, author):
+    #     self.text = text
+    #     self.author = author
     def __init__(self, text, author, tags=None):
         self.text = text
         self.author = author
@@ -639,6 +635,7 @@ class NoteManager:
     def add_note_with_tags(self, author, text, tags):
         note = Notes(text, author, tags)
         self.notes.append(note)
+
 
     def print_notes(self):
         if self.notes:
@@ -671,9 +668,18 @@ class NoteManager:
         except FileNotFoundError:
             self.notes = []
 
-    def edit_note(self, index, new_text):
+    def edit_note(self, index, new_text, new_author, new_tags):
+        # Редагує нотатку з вказаним індексом.
+        # index: Індекс нотатки для редагування
+        # new_text: Новий текст нотатки
+        # new_author: Новий автор нотатки
+        # new_tags: Нові теги нотатки
+        
         if 1 <= index <= len(self.notes):
-            self.notes[index - 1].text = new_text
+            note = self.notes[index - 1]
+            note.text = new_text
+            note.author = new_author
+            note.tags = new_tags
             print(f"Note {index} edited successfully.")
         else:
             print("Invalid note index.")
