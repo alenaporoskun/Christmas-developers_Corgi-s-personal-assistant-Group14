@@ -13,11 +13,13 @@ from prompt_toolkit.completion import WordCompleter
 from re import fullmatch
 from re import IGNORECASE
 
+from file_sorter import sorter
+
 # Регулярний вираз для перевірки email
 EMAIL_REGULAR = r"[a-z][a-z0-9_.]+[@][a-z.]+[.][a-z]{2,}"
 
 # Отримати поточну робочу директорію
-CURRENT_DIRECTORY = getcwd()
+CURRENT_DIRECTORY = path.dirname(path.realpath(__file__))
 
 # Побудувати абсолютний шлях до файлу address_book.pkl у підкаталозі 'data'
 FILENAME = path.join(CURRENT_DIRECTORY, 'data', 'address_book.pkl')
@@ -38,7 +40,7 @@ def main():
 
     # Список доступних команд
     commands = ['help', 'add-contact', 'show-contacts', 'edit-contact', 'delete-contact', 'delete-phone', 'upcoming-birthdays', 
-                'add-note', 'show-notes', 'search-contact', 'search-notes', 'edit-note', 'delete-note', 'exit']
+                'add-note', 'show-notes', 'search-contact', 'search-notes', 'sort-files', 'edit-note', 'delete-note', 'exit']
 
     # Створення об'єкту WordCompleter, який використовується для автодоповнення команд
     completer = WordCompleter(commands, ignore_case=True)
@@ -111,6 +113,10 @@ def main():
             # Відалення нотатки
             fun_delete_note(book)
 
+        elif command == 'sort-files':
+            # Відалення нотатки
+            fun_sort_files()
+
         else: 
             print("The command was not found. Please enter another command.")
 
@@ -151,6 +157,7 @@ def print_menu_commmands():
     - search-notes        - search for a note by word or author
     - edit-note           - editing a note
     - delete-note         - delete note
+    - sort-files          - sort files in a directory
     - exit                - exit the Assistant
     ''')
 
@@ -552,6 +559,15 @@ def fun_delete_note(address_book):
     address_book.notes_manager.save_notes(FILENAME2)
     print('Note deleted successfully!')
 
+def fun_sort_files():
+    # за замовчування папка - example ,
+    # щоб не сортувавало поточну папку при пустому параметрі
+    folder = ''
+    while folder != 'c':
+        folder = input('Enter the directory to sort (c - cancel): ').strip()
+        if folder and folder != 'c':
+            sorter(folder)
+    
 
 class Field:
     def __init__(self, value):
@@ -722,13 +738,6 @@ class NoteManager:
         else:
             print("Invalid note index.")
 
-
-    def delete_note(self, index):
-        if 1 <= index <= len(self.notes):
-            deleted_note = self.notes.pop(index - 1)
-            print(f"Note {index} deleted: {deleted_note}")
-        else:
-            print("Invalid note index.")
 
 class Record:
     def __init__(self, name):
