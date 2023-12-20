@@ -584,7 +584,7 @@ def fun_add_contact(address_book, name: str) -> None:
     address_book.add_record(record)
 
     # Користувачу пропонується ввести телефон для контакту
-    phone = input(f'Enter the phone of contact {name} (c - close): ')
+    phone = input(f'Enter the phone of contact {name} (10 digits) (c - close): ')
 
     # Ввод телефонів для контакту, можливо введення 'c' для закриття
     phones = []
@@ -596,7 +596,7 @@ def fun_add_contact(address_book, name: str) -> None:
                 phones.append(phone)
             else:
                 print('The phone is already in the phone list.')
-            phone = input(f'Enter the phone of contact {name} (c - close): ')
+            phone = input(f'Enter the phone of contact {name} (10 digits) (c - close): ')
         except ValueError:
             # Обробка виключення, якщо введено некоректний телефон
             phone = input(f'Enter the phone (10 digits) (c - close): ')
@@ -669,7 +669,7 @@ def fun_edit_contact(address_book: AddressBook, contact_name: str = "") -> None:
                     print('Name not changed')
 
             elif edit == 'p':
-                new_phone = input("Enter new phone number (c - close): ")
+                new_phone = input("Enter new phone number (10 digits) (c - close): ")
                 while new_phone != 'c':
                     try:
                         if not (len(new_phone) == 10 and new_phone.isdigit()):
