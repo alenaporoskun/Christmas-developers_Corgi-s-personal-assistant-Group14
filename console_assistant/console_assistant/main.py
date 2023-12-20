@@ -78,7 +78,7 @@ def main() -> None:
 
         elif command == 'show-contacts':
             # Виведення всіх записів у книзі
-            print_table(book, "Contact book")
+            print_table(book, "Book of gift recipients")
         
         elif command[:12] == 'edit-contact':
             words_commands = command.split() # розділення рядка на масив слів
@@ -554,10 +554,10 @@ def print_menu_commmands() -> None:
     - edit-contact [name] - edit contact information
     - delete-contact      - delete contact
     - delete-phone        - delete phone from some contact
-    - show-contacts       - display all contacts in the address book
-    - search-contact      - search for contacts in the address book
+    - show-contacts       - display all contacts in the book
+    - search-contact      - search for contacts in the book 
     - upcoming-birthdays  - display a list of contacts whose birthday is a specified number of days from the current date
-    - add-note            - add note with author if he/she is in the contact book
+    - add-note            - add note with author if he/she is in the book
     - show-notes          - show all notes with authors and tags
     - search-notes        - search for a note by word or author
     - edit-note           - editing a note
@@ -602,7 +602,7 @@ def fun_add_contact(address_book, name: str) -> None:
             phone = input(f'Enter the phone (10 digits) (c - close): ')
 
     # Користувачу пропонується ввести день народження для контакту
-    birthday = input(f'Enter the birthday of contact {name} (c - close): ')
+    birthday = input(f'Enter the birthday of contact {name} (Year-month-day) (c - close): ')
 
     # Ввод дня народження для контакту, можливо введення 'c' для закриття
     while birthday != 'c':
@@ -637,7 +637,7 @@ def fun_add_contact(address_book, name: str) -> None:
 
 def fun_edit_contact(address_book: AddressBook, contact_name: str = "") -> None:
     if not contact_name:
-        contact_name = input('Write the name of contact in which you want to'/
+        contact_name = input('Write the name of contact in which you want to'\
                              ' change something: ')
 
     if contact_name in address_book.data:
@@ -645,7 +645,7 @@ def fun_edit_contact(address_book: AddressBook, contact_name: str = "") -> None:
         print(f'Contact found')
 
         while True:
-            edit = input('Enter what you want to edit(n - name, p - phone, '/
+            edit = input('Enter what you want to edit(n - name, p - phone, ' \
                          'b - birthday, a - address, e - email) (c - close): ')
 
             if edit.lower() == 'c':
@@ -679,10 +679,8 @@ def fun_edit_contact(address_book: AddressBook, contact_name: str = "") -> None:
                             contact_edit.add_phone(new_phone)
                         elif len_phones == 1:
                             while True:
-                                choice = input('Enter what you want '/
-                                               '(c - correct phone '/
-                                               f'{contact_edit.phones[0].value}'/
-                                               ', a - add a new phone): ')
+                                choice = input('Enter what you want (c - correct phone ' \
+                                               f'{contact_edit.phones[0].value}, a - add a new phone): ')
                                 if choice == 'c':
                                     contact_edit.edit_phone(contact_edit.phones[0].value,
                                                              new_phone)
@@ -713,7 +711,7 @@ def fun_edit_contact(address_book: AddressBook, contact_name: str = "") -> None:
                     except ValueError:
                         new_phone = input('Enter the valid phone (10 digits) (c - close): ')
             elif edit == 'b':
-                new_birthday = input('Enter new birthday (c - close): ')
+                new_birthday = input('Enter new birthday (Year-month-day) (c - close): ')
                 while new_birthday != 'c':
                     try:
                         contact_edit.set_birthday(new_birthday)
@@ -745,7 +743,7 @@ def fun_delete_contact(address_book: AddressBook) -> None:
     # Видалення контакту з книги контактів
     contact_name = input('Enter the name of contact you want to delete: ')
     if contact_name in address_book.data:
-        question = input('Are you sure you want to delete this contact'/
+        question = input('Are you sure you want to delete this contact' \
                          f' {contact_name}? (yes or no): ')
         if question == 'yes':
             del address_book.data[contact_name]
@@ -785,7 +783,7 @@ def print_table(AddressBook, text_title: str) -> None:
 
     # Перевірка на порожню книгу
     if not AddressBook.data:
-        print("The contact book is empty.")
+        print("The book of gift recipients is empty.")
         return 
 
     # Створення об'єкту Console
@@ -878,7 +876,7 @@ def fun_add_note(address_book: AddressBook) -> None:
 
     # Перевірка, чи автор існує в телефонній книзі
     if author not in address_book.data:
-        print('The author is not found in the contact book.')
+        print('The author is not found in the book of gift recipients.')
         return
 
     # Введення тексту нотатки та тегів
@@ -922,7 +920,7 @@ def fun_search_notes(address_book: AddressBook, filename: str) -> None:
     # Виведення знайдених нотаток
     if filtered_notes:
         console = Console()
-        table = Table(title='Wish List', show_header=True,
+        table = Table(title='Search results', show_header=True,
                       header_style='bold magenta')
         table.title_align = 'center'
         table.title_style = 'bold yellow'
@@ -985,3 +983,4 @@ def fun_sort_files() -> None:
 
 if __name__ == "__main__":
     main()
+    
