@@ -922,7 +922,7 @@ def fun_search_notes(address_book: AddressBook, filename: str) -> None:
     # Виведення знайдених нотаток
     if filtered_notes:
         console = Console()
-        table = Table(title='Notes', show_header=True,
+        table = Table(title='Wish List', show_header=True,
                       header_style='bold magenta')
         table.title_align = 'center'
         table.title_style = 'bold yellow'
