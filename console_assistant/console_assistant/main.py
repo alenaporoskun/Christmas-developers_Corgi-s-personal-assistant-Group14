@@ -537,9 +537,6 @@ def load_book() -> AddressBook:
             return load(file)
     except FileNotFoundError:
         return AddressBook()
-    except Exception as e:
-        print("EXCEPTION\n", e)
-        return AddressBook()
 
 def save_book(address_book: AddressBook) -> None:
     # Збереження адресної книги у файл
@@ -849,17 +846,17 @@ def get_upcoming_birthdays(address_book: AddressBook, days_count: int) -> list:
 
         if record.birthday:                    
             # Формування дати наступного дня народження
-            next_birthday = datetime(today.year, record.birthday.month, record.birthday.day)  
+            next_birthday = datetime(today.year, record.birthday.month, record.birthday.day+1)  
 
             # Якщо день народження вже минув у поточному році, обчислити для наступного року        
             if next_birthday < today:                                                                  
                 next_birthday = datetime(today.year + 1, record.birthday.month, record.birthday.day)  
 
             # Обчислення різниці в часі між сьогоднішньою датою і наступним днем народження
-            delta = next_birthday - today           
+            delta = next_birthday - today       
 
             # Перевірка, чи день народження відбудеться в межах визначеної кількості днів                                                   
-            if 0 <= delta.days <= days_count:                                                          
+            if 0 <= delta.days <= days_count:                                              
                 upcoming_birthdays.append(record)
 
     # Повернення списку з записами, у яких найближчий день народження наступає впродовж зазначеної кількості днів
@@ -983,4 +980,3 @@ def fun_sort_files() -> None:
 
 if __name__ == "__main__":
     main()
-    
