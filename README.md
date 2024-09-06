@@ -4,6 +4,8 @@
 
 ## Project name: Mr. Corgi's personal assistant
 
+[View the project presentation](Project_Python-Core_Group14.pdf)
+
 * We have made a Python package and a console script from the personal assistant script that can be called anywhere in the system from the console with the **console-assistant** command. 
 * To do this, we created a file and folder structure:
 
